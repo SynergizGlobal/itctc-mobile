@@ -1,4 +1,3 @@
-// T-10: 9 leaf columns
 import '../../shared/models/form_table_column.dart';
 import '../../shared/models/form_table_header.dart';
 
@@ -25,9 +24,9 @@ final t10TableDefinition = FormTableDefinition(
     FormTableColumn(title: 'km', minWidth: 48, value: (r, _) => tableCell(r['chainageKm'])),
     FormTableColumn(title: 'm', minWidth: 48, value: (r, _) => tableCell(r['chainageM'])),
     FormTableColumn(title: 'cm', minWidth: 48, value: (r, _) => tableCell(r['chainageCm'])),
-    FormTableColumn(title: 'Sleeper', minWidth: 64, value: (r, _) => tableCell(r['sleeperNo'])),
-    FormTableColumn(title: 'Left Nm', minWidth: 64, value: (r, _) => tableCell(r['torqueLeft'])),
-    FormTableColumn(title: 'Right Nm', minWidth: 64, value: (r, _) => tableCell(r['torqueRight'])),
+    FormTableColumn(title: 'Sleeper No.', minWidth: 64, value: (r, _) => tableCell(r['sleeperNo'])),
+    FormTableColumn(title: 'Left', minWidth: 64, value: (r, _) => tableCell(r['torqueLeft'])),
+    FormTableColumn(title: 'Right', minWidth: 64, value: (r, _) => tableCell(r['torqueRight'])),
     FormTableColumn(
       title: 'Attachments',
       minWidth: 88,

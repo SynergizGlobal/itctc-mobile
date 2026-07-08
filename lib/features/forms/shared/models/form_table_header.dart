@@ -89,3 +89,20 @@ List<PlacedHeaderCell> buildPlacedHeaderCells(FormTableDefinition definition) {
 
   return placed;
 }
+
+/// Whether a vertical divider may be drawn between [boundaryAfterCol] and the next
+/// column on header [row]. Returns false when a merged parent cell spans both sides.
+bool headerColumnBoundaryVisibleInRow({
+  required List<PlacedHeaderCell> placed,
+  required int boundaryAfterCol,
+  required int row,
+}) {
+  for (final cell in placed) {
+    if (row < cell.row || row >= cell.row + cell.rowSpan) continue;
+    if (cell.col <= boundaryAfterCol &&
+        cell.col + cell.colSpan > boundaryAfterCol + 1) {
+      return false;
+    }
+  }
+  return true;
+}

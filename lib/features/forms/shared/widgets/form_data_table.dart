@@ -327,6 +327,14 @@ class _HeaderGridPainter extends CustomPainter {
     return false;
   }
 
+  bool _columnBoundarySpannedInRow(int boundaryAfterCol, int row) {
+    return !headerColumnBoundaryVisibleInRow(
+      placed: placed,
+      boundaryAfterCol: boundaryAfterCol,
+      row: row,
+    );
+  }
+
   double _columnOffset(int col) {
     var x = 0.0;
     for (var i = 0; i < col; i++) {
@@ -353,16 +361,23 @@ class _HeaderGridPainter extends CustomPainter {
       paint,
     );
 
-    // Full-height vertical column dividers
-    var x = 0.0;
-    for (var i = 0; i < columnWidths.length - 1; i++) {
-      x += columnWidths[i];
-      final lineX = _snap(x);
-      canvas.drawLine(
-        Offset(lineX, 0),
-        Offset(lineX, tableHeight),
-        paint,
-      );
+    // Vertical column dividers — skip rows where a colspan parent spans the boundary.
+    for (var boundaryAfterCol = 0;
+        boundaryAfterCol < columnWidths.length - 1;
+        boundaryAfterCol++) {
+      final lineX = _snap(_columnOffset(boundaryAfterCol + 1));
+
+      for (var row = 0; row < rowCount; row++) {
+        if (_columnBoundarySpannedInRow(boundaryAfterCol, row)) continue;
+
+        final yTop = _snap(row * rowHeight);
+        final yBottom = _snap((row + 1) * rowHeight);
+        canvas.drawLine(
+          Offset(lineX, yTop),
+          Offset(lineX, yBottom),
+          paint,
+        );
+      }
     }
 
     // Horizontal row dividers — skip segments inside row-span merged cells

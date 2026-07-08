@@ -1,4 +1,3 @@
-// T-9: 12 leaf columns
 import '../../shared/models/form_table_column.dart';
 import '../../shared/models/form_table_header.dart';
 
@@ -9,7 +8,7 @@ final t9TableDefinition = FormTableDefinition(
       FormTableHeaderCell(label: 'Chainage', colSpan: 3),
       FormTableHeaderCell(label: 'Sleeper\nNo.', rowSpan: 2),
       FormTableHeaderCell(label: 'Injection thickness (mm)', colSpan: 4),
-      FormTableHeaderCell(label: 'Gap\n(mm)', rowSpan: 2),
+      FormTableHeaderCell(label: 'Gap', rowSpan: 2),
       FormTableHeaderCell(label: 'Reference/\nAttachments', rowSpan: 2),
       FormTableHeaderCell(label: 'Remarks', rowSpan: 2),
     ],
@@ -28,7 +27,7 @@ final t9TableDefinition = FormTableDefinition(
     FormTableColumn(title: 'km', minWidth: 48, value: (r, _) => tableCell(r['chainageKm'])),
     FormTableColumn(title: 'm', minWidth: 48, value: (r, _) => tableCell(r['chainageM'])),
     FormTableColumn(title: 'cm', minWidth: 48, value: (r, _) => tableCell(r['chainageCm'])),
-    FormTableColumn(title: 'Sleeper', minWidth: 64, value: (r, _) => tableCell(r['sleeperNo'])),
+    FormTableColumn(title: 'Sleeper No.', minWidth: 64, value: (r, _) => tableCell(r['sleeperNo'])),
     FormTableColumn(title: 'Left', minWidth: 56, value: (r, _) => tableCell(r['thicknessLeft'])),
     FormTableColumn(title: 'Centre', minWidth: 56, value: (r, _) => tableCell(r['thicknessCentre'])),
     FormTableColumn(title: 'Right', minWidth: 56, value: (r, _) => tableCell(r['thicknessRight'])),
