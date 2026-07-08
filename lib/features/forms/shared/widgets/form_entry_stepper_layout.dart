@@ -34,12 +34,6 @@ class FormEntryStepperLayout extends StatelessWidget {
 
     return Column(
       children: [
-        if (header != null) ...[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: header,
-          ),
-        ],
         FormStepIndicator(
           totalSteps: stepCount,
           currentStep: currentStep,
@@ -47,12 +41,21 @@ class FormEntryStepperLayout extends StatelessWidget {
         ),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: child,
-              ),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (header != null) ...[
+                  header!,
+                  const SizedBox(height: 12),
+                ],
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: child,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

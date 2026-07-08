@@ -101,6 +101,62 @@ class _FormSiteCaptureStepState extends State<FormSiteCaptureStep> {
     widget.onChanged();
   }
 
+  Future<void> _showSelfiePreview(String path) async {
+    final file = File(path);
+    if (!file.existsSync()) {
+      await _showMessage(
+        title: 'Preview unavailable',
+        message: 'The selfie file could not be found on this device.',
+      );
+      return;
+    }
+
+    if (!mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
+      showDragHandle: true,
+      useSafeArea: true,
+      builder: (ctx) {
+        final sheetHeight = MediaQuery.sizeOf(ctx).height * 0.82;
+
+        return SizedBox(
+          height: sheetHeight,
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                child: Text(
+                  'Inspector Selfie',
+                  style: Theme.of(ctx).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: InteractiveViewer(
+                      minScale: 1,
+                      maxScale: 4,
+                      child: Image.file(file, fit: BoxFit.contain),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _showMessage({
     required String title,
     required String message,
@@ -157,6 +213,7 @@ class _FormSiteCaptureStepState extends State<FormSiteCaptureStep> {
             path: _capture.selfie!.path,
             onRetake: _capturingSelfie ? null : _captureSelfie,
             onRemove: _removeSelfie,
+            onPreview: () => _showSelfiePreview(_capture.selfie!.path),
           ),
         ] else
           OutlinedButton.icon(
@@ -240,32 +297,58 @@ class _SelfiePreview extends StatelessWidget {
     required this.path,
     required this.onRetake,
     required this.onRemove,
+    required this.onPreview,
   });
 
   final String path;
   final VoidCallback? onRetake;
   final VoidCallback onRemove;
+  final VoidCallback onPreview;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final file = File(path);
+    final hasImage = file.existsSync();
 
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (file.existsSync())
-            AspectRatio(
-              aspectRatio: 4 / 3,
-              child: Image.file(file, fit: BoxFit.cover),
-            )
-          else
-            const AspectRatio(
-              aspectRatio: 4 / 3,
-              child: Center(child: Icon(Icons.broken_image_rounded)),
-            ),
+          Stack(
+            children: [
+              GestureDetector(
+                onTap: hasImage ? onPreview : null,
+                child: hasImage
+                    ? AspectRatio(
+                        aspectRatio: 4 / 3,
+                        child: Image.file(file, fit: BoxFit.cover),
+                      )
+                    : const AspectRatio(
+                        aspectRatio: 4 / 3,
+                        child: Center(child: Icon(Icons.broken_image_rounded)),
+                      ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Material(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: IconButton(
+                    tooltip: 'Retake selfie',
+                    onPressed: onRetake,
+                    icon: const Icon(
+                      Icons.refresh_rounded,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
             child: Row(
@@ -275,11 +358,6 @@ class _SelfiePreview extends StatelessWidget {
                     'Selfie captured',
                     style: theme.textTheme.bodyMedium,
                   ),
-                ),
-                TextButton.icon(
-                  onPressed: onRetake,
-                  icon: const Icon(Icons.camera_front_rounded, size: 18),
-                  label: const Text('Retake'),
                 ),
                 IconButton(
                   tooltip: 'Remove selfie',

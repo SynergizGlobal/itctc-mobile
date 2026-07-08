@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/form_calculations.dart';
+import '../../shared/widgets/collapsible_form_panel.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/calculated_value_field.dart';
 import '../../../../core/widgets/section_header.dart';
@@ -131,50 +132,53 @@ class _MeasurementRow extends StatelessWidget {
 }
 
 class ToleranceReferenceCard extends StatelessWidget {
-  const ToleranceReferenceCard({super.key, required this.trackType});
+  const ToleranceReferenceCard({
+    super.key,
+    required this.trackType,
+    this.initiallyExpanded = false,
+  });
 
   final TrackType trackType;
+  final bool initiallyExpanded;
 
   @override
   Widget build(BuildContext context) {
     final config = ToleranceConfig.forTrackType(trackType);
     final theme = Theme.of(context);
+    final onContainer = theme.colorScheme.onPrimaryContainer;
 
-    return Card(
-      color: theme.colorScheme.primaryContainer,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.15),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Tolerances — ${trackType.name.toUpperCase()} Track',
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _TolRow('Gauge', '±${config.gauge}'),
-            _TolRow('Cross Level', '±${config.crossLevel}'),
-            _TolRow('Longitudinal alignment', '±${config.longitudinalAlignment}/10m chord'),
-            _TolRow('Lateral alignment', '±${config.lateralAlignment}/10m chord'),
-          ],
-        ),
+    return CollapsibleFormPanel(
+      title: 'Tolerances — ${trackType.name.toUpperCase()} Track',
+      initiallyExpanded: initiallyExpanded,
+      expandedMaxHeight: 200,
+      backgroundColor: theme.colorScheme.primaryContainer,
+      foregroundColor: onContainer,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _TolRow('Gauge', '±${config.gauge}', onContainer),
+          _TolRow('Cross Level', '±${config.crossLevel}', onContainer),
+          _TolRow(
+            'Longitudinal alignment',
+            '±${config.longitudinalAlignment}/10m chord',
+            onContainer,
+          ),
+          _TolRow(
+            'Lateral alignment',
+            '±${config.lateralAlignment}/10m chord',
+            onContainer,
+          ),
+        ],
       ),
     );
   }
 }
 
 class _TolRow extends StatelessWidget {
-  const _TolRow(this.label, this.value);
+  const _TolRow(this.label, this.value, this.fg);
   final String label;
   final String value;
+  final Color fg;
 
   @override
   Widget build(BuildContext context) {
@@ -188,14 +192,14 @@ class _TolRow extends StatelessWidget {
             child: Text(
               label,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.85),
+                color: fg.withValues(alpha: 0.85),
               ),
             ),
           ),
           Text(
             value,
             style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onPrimaryContainer,
+              color: fg,
               fontWeight: FontWeight.w700,
             ),
           ),

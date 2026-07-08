@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/form_calculations.dart';
 import '../../../../core/widgets/form_widgets.dart';
 import '../../providers/form_table_providers.dart';
+import '../../shared/form_shared_steps.dart';
 import '../../shared/utils/form_site_capture_validation.dart';
 import '../../shared/widgets/form_entry_stepper_layout.dart';
 import '../../shared/widgets/form_attachments_field.dart';
@@ -109,7 +110,13 @@ class _T2FormScreenState extends ConsumerState<T2FormScreen> {
         stepCount: _stepCount,
         currentStep: _step,
         isLoading: false,
-        header: _step > 1 ? ToleranceReferenceCard(trackType: entry.trackType) : null,
+        header: FormSharedSteps.showsToleranceReference(
+              step: _step,
+              stepCount: _stepCount,
+              firstMeasurementStep: 2,
+            )
+            ? ToleranceReferenceCard(trackType: entry.trackType)
+            : null,
         onStepTap: _goToStep,
         onPrevious: () {
           if (_step > 0) setState(() => _step--);

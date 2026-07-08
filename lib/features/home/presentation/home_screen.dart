@@ -7,13 +7,38 @@ import '../providers/home_provider.dart';
 import 'widgets/form_card.dart';
 import 'widgets/theme_switcher.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    ref.read(searchQueryProvider.notifier).state = '';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final forms = ref.watch(filteredFormsProvider);
     final theme = Theme.of(context);
+    final hasQuery = ref.watch(searchQueryProvider).isNotEmpty;
 
     return Scaffold(
       body: CustomScrollView(
@@ -40,35 +65,38 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
           ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _StickySearchHeaderDelegate(
+              backgroundColor: theme.colorScheme.surface,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) =>
+                      ref.read(searchQueryProvider.notifier).state = value,
+                  decoration: InputDecoration(
+                    hintText: 'Search forms by code, title or category',
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    suffixIcon: hasQuery
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded),
+                            onPressed: _clearSearch,
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+            ),
+          ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    onChanged: (v) =>
-                        ref.read(searchQueryProvider.notifier).state = v,
-                    decoration: InputDecoration(
-                      hintText: 'Search forms by code, title or category',
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      suffixIcon: ref.watch(searchQueryProvider).isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear_rounded),
-                              onPressed: () =>
-                                  ref.read(searchQueryProvider.notifier).state = '',
-                            )
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    '${forms.length} Available Forms',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: Text(
+                '${forms.length} Available Forms',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),
@@ -112,5 +140,39 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+class _StickySearchHeaderDelegate extends SliverPersistentHeaderDelegate {
+  const _StickySearchHeaderDelegate({
+    required this.child,
+    required this.backgroundColor,
+  });
+
+  final Widget child;
+  final Color backgroundColor;
+
+  static const double _height = 64;
+
+  @override
+  double get minExtent => _height;
+
+  @override
+  double get maxExtent => _height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Material(
+      color: backgroundColor,
+      elevation: overlapsContent ? 1 : 0,
+      shadowColor: Colors.black26,
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _StickySearchHeaderDelegate oldDelegate) {
+    return oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.child != child;
   }
 }

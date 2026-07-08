@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/form_calculations.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../providers/form_table_providers.dart';
+import '../../shared/form_shared_steps.dart';
 import '../../shared/models/form_site_capture.dart';
 import '../../shared/utils/form_site_capture_validation.dart';
 import '../../shared/widgets/form_attachments_field.dart';
@@ -115,7 +116,7 @@ class _T10FormScreenState extends ConsumerState<T10FormScreen> {
         stepCount: _stepCount,
         currentStep: _step,
         isLoading: false,
-        header: _step > 0
+        header: FormSharedSteps.showsToleranceReference(step: _step, stepCount: _stepCount)
             ? const FormToleranceBanner(
                 items: [
                   'Standard value: 150 Nm',

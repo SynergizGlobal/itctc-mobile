@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'collapsible_form_panel.dart';
+
 enum TrackDirection { up, down }
 
 extension TrackDirectionX on TrackDirection {
@@ -95,42 +97,43 @@ class FormToleranceBanner extends StatelessWidget {
     super.key,
     required this.items,
     this.note,
+    this.initiallyExpanded = false,
+    this.expandedMaxHeight = 220,
   });
 
   final List<String> items;
   final String? note;
+  final bool initiallyExpanded;
+  final double expandedMaxHeight;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
-      color: theme.colorScheme.surfaceContainerHighest,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Tolerances', style: theme.textTheme.titleSmall),
-            const SizedBox(height: 8),
-            ...items.map(
-              (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(item, style: theme.textTheme.bodySmall),
+    return CollapsibleFormPanel(
+      title: 'Tolerances',
+      initiallyExpanded: initiallyExpanded,
+      expandedMaxHeight: expandedMaxHeight,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(item, style: theme.textTheme.bodySmall),
+            ),
+          ),
+          if (note != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              note!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
               ),
             ),
-            if (note != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                note!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }
