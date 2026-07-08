@@ -23,7 +23,28 @@ class AttachmentStorageService {
     'xlsx',
     'csv',
     'txt',
+    'mp4',
+    'mov',
+    'm4v',
+    'webm',
+    'mkv',
+    'avi',
+    '3gp',
   ];
+
+  static const videoExtensions = {
+    'mp4',
+    'mov',
+    'm4v',
+    'webm',
+    'mkv',
+    'avi',
+    '3gp',
+  };
+
+  static bool isVideoExtension(String extension) {
+    return videoExtensions.contains(extension.toLowerCase());
+  }
 
   static Future<String> _recordDir(String recordId) async {
     final base = await getApplicationDocumentsDirectory();
@@ -63,6 +84,27 @@ class AttachmentStorageService {
       path: destPath,
       size: size,
       extension: extension,
+    );
+  }
+
+  static Future<FormAttachment> persistLocalFile({
+    required String recordId,
+    required String sourcePath,
+    required String displayName,
+    String? extension,
+  }) async {
+    final normalizedExtension = _normalizeExtension(extension, displayName);
+    final id = const Uuid().v4();
+    final destPath = p.join(await _recordDir(recordId), '$id.$normalizedExtension');
+    await File(sourcePath).copy(destPath);
+    final size = await File(destPath).length();
+
+    return FormAttachment(
+      id: id,
+      name: displayName,
+      path: destPath,
+      size: size,
+      extension: normalizedExtension,
     );
   }
 

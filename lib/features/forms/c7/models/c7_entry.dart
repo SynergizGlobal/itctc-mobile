@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/utils/form_calculations.dart';
 import '../../../../core/utils/validators.dart';
 import '../../shared/models/form_attachment.dart';
+import '../../shared/models/form_site_capture.dart';
 
 class C7Entry {
   C7Entry({String? id})
@@ -38,6 +39,7 @@ class C7Entry {
   final TextEditingController standardAController;
   final TextEditingController standardBController;
   final TextEditingController remarksController;
+  final FormSiteCapture siteCapture = FormSiteCapture();
   final List<FormAttachment> attachments = [];
 
   double get h1 => parseDouble(h1Controller.text) ?? 0;
@@ -84,6 +86,13 @@ class C7Entry {
     entry.standardBController.text = data['standardB']?.toString() ?? '';
     entry.remarksController.text = data['remarks']?.toString() ?? '';
     entry.attachments.addAll(parseAttachments(data['attachments']));
+    entry.siteCapture.applyFrom(
+      FormSiteCapture.fromMap(
+        data['siteCapture'] is Map
+            ? Map<String, dynamic>.from(data['siteCapture'] as Map)
+            : null,
+      ),
+    );
     return entry;
   }
 
@@ -105,6 +114,7 @@ class C7Entry {
         'calculatedB': calculatedB,
         'standardB': parseDouble(standardBController.text),
         'attachments': attachments.map((a) => a.toJson()).toList(),
+        'siteCapture': siteCapture.toJson(),
         'remarks': remarksController.text,
       };
 

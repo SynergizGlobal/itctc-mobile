@@ -6,8 +6,11 @@ import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/calculated_value_field.dart';
 import '../../../../core/widgets/form_widgets.dart';
 import '../../providers/form_table_providers.dart';
+import '../../shared/utils/form_site_capture_validation.dart';
 import '../../shared/widgets/form_entry_stepper_layout.dart';
 import '../../shared/widgets/form_attachments_field.dart';
+import '../../shared/widgets/form_site_capture_step.dart';
+import '../../shared/models/form_site_capture.dart';
 import '../models/c7_entry.dart';
 
 class C7FormScreen extends ConsumerStatefulWidget {
@@ -20,7 +23,7 @@ class C7FormScreen extends ConsumerStatefulWidget {
 }
 
 class _C7FormScreenState extends ConsumerState<C7FormScreen> {
-  static const _stepCount = 4;
+  static const _stepCount = 5;
 
   C7Entry? _entry;
   bool _loaded = false;
@@ -68,7 +71,17 @@ class _C7FormScreenState extends ConsumerState<C7FormScreen> {
       _saveToTable();
       return;
     }
+    if (!FormSiteCaptureValidation.guardStep(e.siteCapture, _step + 1)) {
+      return;
+    }
     setState(() => _step++);
+  }
+
+  void _goToStep(int step) {
+    if (!FormSiteCaptureValidation.guardStep(e.siteCapture, step)) {
+      return;
+    }
+    setState(() => _step = step);
   }
 
   @override
@@ -96,7 +109,7 @@ class _C7FormScreenState extends ConsumerState<C7FormScreen> {
         stepCount: _stepCount,
         currentStep: _step,
         isLoading: false,
-        onStepTap: (s) => setState(() => _step = s),
+        onStepTap: _goToStep,
         onPrevious: () {
           if (_step > 0) setState(() => _step--);
         },
@@ -108,7 +121,12 @@ class _C7FormScreenState extends ConsumerState<C7FormScreen> {
 
   Widget _buildStep() {
     return switch (_step) {
-      0 => Column(
+      0 => FormSiteCaptureStep(
+          recordId: e.id,
+          siteCapture: e.siteCapture,
+          onChanged: _refresh,
+        ),
+      1 => Column(
           children: [
             ChainageFields(
               kmController: e.chainageKmController,
@@ -130,7 +148,7 @@ class _C7FormScreenState extends ConsumerState<C7FormScreen> {
             AppTextField(label: 'Type of track', controller: e.trackTypeController),
           ],
         ),
-      1 => Column(
+      2 => Column(
           children: [
             NumericTextField(
               label: 'h1 — Measured value',
@@ -175,7 +193,7 @@ class _C7FormScreenState extends ConsumerState<C7FormScreen> {
             ),
           ],
         ),
-      2 => Column(
+      3 => Column(
           children: [
             NumericTextField(
               label: 'A = (h1 + h2) / 2 + h5 — Standard value',
@@ -224,6 +242,14 @@ class _C7FormScreenState extends ConsumerState<C7FormScreen> {
             FormSummaryRow(label: 'Straight / Curve', value: e.straightCurveController.text),
             FormSummaryRow(label: 'Applied cant value', value: '${e.cantController.text} mm'),
             FormSummaryRow(label: 'Type of track', value: e.trackTypeController.text),
+            FormSummaryRow(
+              label: 'Location',
+              value: siteCaptureLocationSummary(e.siteCapture),
+            ),
+            FormSummaryRow(
+              label: 'Selfie',
+              value: siteCaptureSelfieSummary(e.siteCapture),
+            ),
             FormSummaryRow(label: 'h1', value: '${e.h1Controller.text} mm'),
             FormSummaryRow(label: 'h2', value: '${e.h2Controller.text} mm'),
             FormSummaryRow(label: 'h3', value: '${e.h3Controller.text} mm'),

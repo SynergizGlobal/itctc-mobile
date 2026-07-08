@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/utils/form_calculations.dart';
 import '../../../../core/utils/validators.dart';
 import '../../shared/models/form_attachment.dart';
+import '../../shared/models/form_site_capture.dart';
 
 class T2Measurement {
   T2Measurement()
@@ -87,6 +88,7 @@ class T2Entry {
   final TextEditingController chainageMController;
   final T2LineData downLine;
   final T2LineData upLine;
+  final FormSiteCapture siteCapture = FormSiteCapture();
   final List<FormAttachment> attachments = [];
 
   TrackType trackType = TrackType.slab;
@@ -108,6 +110,13 @@ class T2Entry {
     _populateLine(entry.downLine, data['downLine'] as Map<String, dynamic>?);
     _populateLine(entry.upLine, data['upLine'] as Map<String, dynamic>?);
     entry.attachments.addAll(parseAttachments(data['attachments']));
+    entry.siteCapture.applyFrom(
+      FormSiteCapture.fromMap(
+        data['siteCapture'] is Map
+            ? Map<String, dynamic>.from(data['siteCapture'] as Map)
+            : null,
+      ),
+    );
     return entry;
   }
 
@@ -133,6 +142,7 @@ class T2Entry {
         'chainageM': chainageMController.text,
         'trackType': trackType.name,
         'attachments': attachments.map((a) => a.toJson()).toList(),
+        'siteCapture': siteCapture.toJson(),
         'downLine': downLine.toJson(),
         'upLine': upLine.toJson(),
       };

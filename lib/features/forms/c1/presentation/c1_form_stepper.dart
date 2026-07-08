@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/utils/form_site_capture_validation.dart';
 import '../../shared/widgets/form_entry_stepper_layout.dart';
 import '../../shared/widgets/form_attachments_field.dart';
+import '../../shared/widgets/form_site_capture_step.dart';
+import '../../shared/models/form_site_capture.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/calculated_value_field.dart';
 import '../../../../core/widgets/form_widgets.dart';
@@ -24,7 +27,7 @@ class C1FormStepper extends StatefulWidget {
 }
 
 class _C1FormStepperState extends State<C1FormStepper> {
-  static const _stepCount = 5;
+  static const _stepCount = 6;
   int _step = 0;
 
   C1Entry get _entry => widget.entry;
@@ -36,7 +39,17 @@ class _C1FormStepperState extends State<C1FormStepper> {
       widget.onSubmit();
       return;
     }
+    if (!FormSiteCaptureValidation.guardStep(_entry.siteCapture, _step + 1)) {
+      return;
+    }
     setState(() => _step++);
+  }
+
+  void _goToStep(int step) {
+    if (!FormSiteCaptureValidation.guardStep(_entry.siteCapture, step)) {
+      return;
+    }
+    setState(() => _step = step);
   }
 
   @override
@@ -45,7 +58,7 @@ class _C1FormStepperState extends State<C1FormStepper> {
       stepCount: _stepCount,
       currentStep: _step,
       isLoading: widget.isLoading,
-      onStepTap: (s) => setState(() => _step = s),
+      onStepTap: _goToStep,
       onPrevious: () {
         if (_step > 0) setState(() => _step--);
       },
@@ -56,7 +69,12 @@ class _C1FormStepperState extends State<C1FormStepper> {
 
   Widget _buildStep() {
     return switch (_step) {
-      0 => Column(
+      0 => FormSiteCaptureStep(
+          recordId: _entry.id,
+          siteCapture: _entry.siteCapture,
+          onChanged: _refresh,
+        ),
+      1 => Column(
           children: [
             ChainageFields(
               kmController: _entry.chainageKmController,
@@ -89,7 +107,7 @@ class _C1FormStepperState extends State<C1FormStepper> {
             ),
           ],
         ),
-      1 => Column(
+      2 => Column(
           children: [
             NumericTextField(
               label: 'a — Measured value',
@@ -117,7 +135,7 @@ class _C1FormStepperState extends State<C1FormStepper> {
             ),
           ],
         ),
-      2 => Column(
+      3 => Column(
           children: [
             NumericTextField(
               label: 'b — Measured value',
@@ -146,7 +164,7 @@ class _C1FormStepperState extends State<C1FormStepper> {
             ),
           ],
         ),
-      3 => Column(
+      4 => Column(
           children: [
             NumericTextField(
               label: 'c — Measured value',
@@ -219,6 +237,14 @@ class _C1FormStepperState extends State<C1FormStepper> {
             FormSummaryRow(label: 'Straight / Curve', value: _entry.straightCurveController.text),
             FormSummaryRow(label: 'Type of track', value: _entry.trackTypeController.text),
             FormSummaryRow(label: 'Applied cant value', value: '${_entry.cantController.text} mm'),
+            FormSummaryRow(
+              label: 'Location',
+              value: siteCaptureLocationSummary(_entry.siteCapture),
+            ),
+            FormSummaryRow(
+              label: 'Selfie',
+              value: siteCaptureSelfieSummary(_entry.siteCapture),
+            ),
             FormSummaryRow(label: 'a', value: '${_entry.aController.text} mm'),
             FormSummaryRow(label: 'X (DL)', value: '${_entry.xDown.toStringAsFixed(2)} mm'),
             FormSummaryRow(label: 'A measured', value: '${_entry.calculatedA.toStringAsFixed(2)} mm'),

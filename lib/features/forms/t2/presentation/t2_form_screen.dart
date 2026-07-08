@@ -5,8 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/form_calculations.dart';
 import '../../../../core/widgets/form_widgets.dart';
 import '../../providers/form_table_providers.dart';
+import '../../shared/utils/form_site_capture_validation.dart';
 import '../../shared/widgets/form_entry_stepper_layout.dart';
 import '../../shared/widgets/form_attachments_field.dart';
+import '../../shared/widgets/form_site_capture_step.dart';
+import '../../shared/models/form_site_capture.dart';
 import '../models/t2_entry.dart';
 import '../widgets/t2_line_fields.dart';
 
@@ -20,7 +23,7 @@ class T2FormScreen extends ConsumerStatefulWidget {
 }
 
 class _T2FormScreenState extends ConsumerState<T2FormScreen> {
-  static const _stepCount = 5;
+  static const _stepCount = 6;
 
   T2Entry? _entry;
   bool _loaded = false;
@@ -68,7 +71,17 @@ class _T2FormScreenState extends ConsumerState<T2FormScreen> {
       _saveToTable();
       return;
     }
+    if (!FormSiteCaptureValidation.guardStep(entry.siteCapture, _step + 1)) {
+      return;
+    }
     setState(() => _step++);
+  }
+
+  void _goToStep(int step) {
+    if (!FormSiteCaptureValidation.guardStep(entry.siteCapture, step)) {
+      return;
+    }
+    setState(() => _step = step);
   }
 
   @override
@@ -96,8 +109,8 @@ class _T2FormScreenState extends ConsumerState<T2FormScreen> {
         stepCount: _stepCount,
         currentStep: _step,
         isLoading: false,
-        header: _step > 0 ? ToleranceReferenceCard(trackType: entry.trackType) : null,
-        onStepTap: (s) => setState(() => _step = s),
+        header: _step > 1 ? ToleranceReferenceCard(trackType: entry.trackType) : null,
+        onStepTap: _goToStep,
         onPrevious: () {
           if (_step > 0) setState(() => _step--);
         },
@@ -109,7 +122,12 @@ class _T2FormScreenState extends ConsumerState<T2FormScreen> {
 
   Widget _buildStep() {
     return switch (_step) {
-      0 => Column(
+      0 => FormSiteCaptureStep(
+          recordId: entry.id,
+          siteCapture: entry.siteCapture,
+          onChanged: _refresh,
+        ),
+      1 => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ChainageFields(
@@ -131,24 +149,24 @@ class _T2FormScreenState extends ConsumerState<T2FormScreen> {
             ToleranceReferenceCard(trackType: entry.trackType),
           ],
         ),
-      1 => T2LineFields(
+      2 => T2LineFields(
           lineData: entry.downLine,
           lineLabel: 'Down Line',
           trackType: entry.trackType,
           onChanged: _refresh,
         ),
-      2 => T2LineFields(
+      3 => T2LineFields(
           lineData: entry.upLine,
           lineLabel: 'Up Line',
           trackType: entry.trackType,
           onChanged: _refresh,
         ),
-      3 => FormAttachmentsField(
+      4 => FormAttachmentsField(
           recordId: entry.id,
           attachments: entry.attachments,
           onChanged: _refresh,
         ),
-      4 => Column(
+      5 => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Review', style: Theme.of(context).textTheme.titleMedium),
@@ -158,6 +176,14 @@ class _T2FormScreenState extends ConsumerState<T2FormScreen> {
               value: '${entry.chainageKmController.text}+${entry.chainageMController.text}',
             ),
             FormSummaryRow(label: 'Track type', value: entry.trackType.name),
+            FormSummaryRow(
+              label: 'Location',
+              value: siteCaptureLocationSummary(entry.siteCapture),
+            ),
+            FormSummaryRow(
+              label: 'Selfie',
+              value: siteCaptureSelfieSummary(entry.siteCapture),
+            ),
             FormSummaryRow(
               label: 'Attachments',
               value: attachmentsSummary(entry.attachments),

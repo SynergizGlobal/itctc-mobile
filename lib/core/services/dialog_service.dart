@@ -8,30 +8,58 @@ class DialogService {
 
   static BuildContext? get _context => ErrorHandler.navigatorKey.currentContext;
 
-  static Future<void> showError({
+  static Future<void> showAlert({
     required String title,
     required String message,
-    VoidCallback? onRetry,
+    IconData icon = Icons.info_outline_rounded,
+    Color iconColor = AppColors.info,
+    String primaryAction = 'OK',
+    VoidCallback? onPrimary,
+    String? secondaryAction,
+    VoidCallback? onSecondary,
+    bool barrierDismissible = true,
   }) async {
     final context = _context;
     if (context == null || !context.mounted) return;
 
     await showDialog<void>(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: barrierDismissible,
       builder: (ctx) => AppDialog(
         title: title,
         message: message,
-        icon: Icons.error_outline_rounded,
-        iconColor: AppColors.error,
-        primaryAction: onRetry != null ? 'Retry' : 'OK',
+        icon: icon,
+        iconColor: iconColor,
+        primaryAction: primaryAction,
         onPrimary: () {
           Navigator.of(ctx).pop();
-          onRetry?.call();
+          onPrimary?.call();
         },
-        secondaryAction: onRetry != null ? 'Cancel' : null,
-        onSecondary: onRetry != null ? () => Navigator.of(ctx).pop() : null,
+        secondaryAction: secondaryAction,
+        onSecondary: secondaryAction != null
+            ? () {
+                Navigator.of(ctx).pop();
+                onSecondary?.call();
+              }
+            : null,
       ),
+    );
+  }
+
+  static Future<void> showError({
+    required String title,
+    required String message,
+    VoidCallback? onRetry,
+  }) async {
+    await showAlert(
+      title: title,
+      message: message,
+      icon: Icons.error_outline_rounded,
+      iconColor: AppColors.error,
+      primaryAction: onRetry != null ? 'Retry' : 'OK',
+      onPrimary: onRetry,
+      secondaryAction: onRetry != null ? 'Cancel' : null,
+      barrierDismissible: false,
     );
   }
 
@@ -40,22 +68,13 @@ class DialogService {
     required String message,
     VoidCallback? onDone,
   }) async {
-    final context = _context;
-    if (context == null || !context.mounted) return;
-
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AppDialog(
-        title: title,
-        message: message,
-        icon: Icons.check_circle_outline_rounded,
-        iconColor: AppColors.success,
-        primaryAction: 'Done',
-        onPrimary: () {
-          Navigator.of(ctx).pop();
-          onDone?.call();
-        },
-      ),
+    await showAlert(
+      title: title,
+      message: message,
+      icon: Icons.check_circle_outline_rounded,
+      iconColor: AppColors.success,
+      primaryAction: 'Done',
+      onPrimary: onDone,
     );
   }
 

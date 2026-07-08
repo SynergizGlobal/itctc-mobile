@@ -33,9 +33,6 @@ class AttachmentPickResult {
 class AttachmentPickerService {
   AttachmentPickerService._();
 
-  /// Opens the native document picker (SAF on Android, UIDocumentPicker on iOS).
-  /// No broad storage runtime permission is requested — access is scoped to
-  /// user-selected files only (Play Store / App Store friendly).
   static Future<AttachmentPickResult> pickReferenceFiles() async {
     try {
       final result = await FilePicker.platform.pickFiles(

@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/utils/form_calculations.dart';
 import '../../../../core/utils/validators.dart';
 import '../../shared/models/form_attachment.dart';
+import '../../shared/models/form_site_capture.dart';
 
 class C1Entry {
   C1Entry({String? id})
@@ -42,6 +43,7 @@ class C1Entry {
   final TextEditingController standardDController;
   final TextEditingController measuredDController;
   final TextEditingController remarksController;
+  final FormSiteCapture siteCapture = FormSiteCapture();
   final List<FormAttachment> attachments = [];
 
   bool get isStraight {
@@ -94,6 +96,13 @@ class C1Entry {
     entry.measuredDController.text = data['measuredD']?.toString() ?? '';
     entry.remarksController.text = data['remarks']?.toString() ?? '';
     entry.attachments.addAll(parseAttachments(data['attachments']));
+    entry.siteCapture.applyFrom(
+      FormSiteCapture.fromMap(
+        data['siteCapture'] is Map
+            ? Map<String, dynamic>.from(data['siteCapture'] as Map)
+            : null,
+      ),
+    );
     return entry;
   }
 
@@ -120,6 +129,7 @@ class C1Entry {
         'standardD': parseDouble(standardDController.text),
         'measuredD': parseDouble(measuredDController.text),
         'attachments': attachments.map((a) => a.toJson()).toList(),
+        'siteCapture': siteCapture.toJson(),
         'remarks': remarksController.text,
       };
 

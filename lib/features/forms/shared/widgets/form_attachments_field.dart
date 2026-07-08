@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/services/dialog_service.dart';
 import '../services/attachment_access_policy.dart';
 import '../services/attachment_picker_service.dart';
 import '../services/attachment_storage_service.dart';
@@ -60,20 +61,9 @@ class _FormAttachmentsFieldState extends State<FormAttachmentsField> {
   }
 
   Future<void> _showPickError(AttachmentPickResult result) async {
-    await showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Could not add attachment'),
-          content: Text(result.errorMessage ?? 'Unknown error'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
+    await DialogService.showError(
+      title: 'Could not add attachment',
+      message: result.errorMessage ?? 'Unknown error',
     );
   }
 
@@ -96,7 +86,7 @@ class _FormAttachmentsFieldState extends State<FormAttachmentsField> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Upload images or documents (JPEG, PNG, PDF, DOC, XLSX, etc.)',
+          'Upload images, videos, or documents (JPEG, PNG, MP4, MOV, PDF, DOC, XLSX, etc.)',
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -169,6 +159,8 @@ class _AttachmentTile extends StatelessWidget {
   IconData _iconForExtension(String extension) {
     return switch (extension.toLowerCase()) {
       'jpg' || 'jpeg' || 'png' || 'gif' || 'webp' => Icons.image_rounded,
+      'mp4' || 'mov' || 'm4v' || 'webm' || 'mkv' || 'avi' || '3gp' =>
+        Icons.videocam_rounded,
       'pdf' => Icons.picture_as_pdf_rounded,
       'doc' || 'docx' => Icons.description_rounded,
       'xls' || 'xlsx' || 'csv' => Icons.table_chart_rounded,
