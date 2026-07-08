@@ -70,6 +70,28 @@ class FormCalculations {
   }) {
     return irregularity.abs() <= tolerance;
   }
+
+  static double calculateAverage(Iterable<double> values) {
+    final list = values.toList();
+    if (list.isEmpty) return 0;
+    return round(list.reduce((a, b) => a + b) / list.length);
+  }
+
+  /// Resin > 60 mm is shown in parentheses per T-7-2 form note.
+  static String formatResinThicknessDisplay(double value) {
+    final rounded = round(value);
+    final text = rounded.toStringAsFixed(0);
+    return rounded > 60 ? '($text)' : text;
+  }
+
+  static bool isBoltTorqueWithinTolerance({
+    required double measured,
+    double standard = 150,
+    double tolerancePercent = 10,
+  }) {
+    final delta = standard * tolerancePercent / 100;
+    return (measured - standard).abs() <= delta;
+  }
 }
 
 enum TrackType { slab, ballasted }

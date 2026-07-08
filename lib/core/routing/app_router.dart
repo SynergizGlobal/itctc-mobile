@@ -7,6 +7,14 @@ import '../../features/forms/c7/presentation/c7_form_screen.dart';
 import '../../features/forms/c7/presentation/c7_table_screen.dart';
 import '../../features/forms/t2/presentation/t2_form_screen.dart';
 import '../../features/forms/t2/presentation/t2_table_screen.dart';
+import '../../features/forms/t7_2/presentation/t72_form_screen.dart';
+import '../../features/forms/t7_2/presentation/t72_table_screen.dart';
+import '../../features/forms/t8/presentation/t8_form_screen.dart';
+import '../../features/forms/t8/presentation/t8_table_screen.dart';
+import '../../features/forms/t9/presentation/t9_form_screen.dart';
+import '../../features/forms/t9/presentation/t9_table_screen.dart';
+import '../../features/forms/t10/presentation/t10_form_screen.dart';
+import '../../features/forms/t10/presentation/t10_table_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../services/error_handler.dart';
 import 'route_names.dart';
@@ -51,6 +59,46 @@ final appRouter = GoRouter(
         GoRoute(
           path: 'entry',
           builder: (context, state) => T2FormScreen(editIndex: _parseEditIndex(state)),
+        ),
+      ],
+    ),
+    GoRoute(
+      path: RouteNames.formT72,
+      builder: (context, state) => const T72TableScreen(),
+      routes: [
+        GoRoute(
+          path: 'entry',
+          builder: (context, state) => T72FormScreen(editIndex: _parseEditIndex(state)),
+        ),
+      ],
+    ),
+    GoRoute(
+      path: RouteNames.formT8,
+      builder: (context, state) => const T8TableScreen(),
+      routes: [
+        GoRoute(
+          path: 'entry',
+          builder: (context, state) => T8FormScreen(editIndex: _parseEditIndex(state)),
+        ),
+      ],
+    ),
+    GoRoute(
+      path: RouteNames.formT9,
+      builder: (context, state) => const T9TableScreen(),
+      routes: [
+        GoRoute(
+          path: 'entry',
+          builder: (context, state) => T9FormScreen(editIndex: _parseEditIndex(state)),
+        ),
+      ],
+    ),
+    GoRoute(
+      path: RouteNames.formT10,
+      builder: (context, state) => const T10TableScreen(),
+      routes: [
+        GoRoute(
+          path: 'entry',
+          builder: (context, state) => T10FormScreen(editIndex: _parseEditIndex(state)),
         ),
       ],
     ),

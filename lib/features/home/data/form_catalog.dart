@@ -34,6 +34,46 @@ class FormCatalog {
       routePath: '/forms/t2',
       measurementInterval: 'Per chainage point',
     ),
+    FormInfo(
+      id: 't7-2',
+      code: 'Form T-7-2',
+      title: 'CAM Injected Thickness',
+      description:
+          'Measurement record of CAM injected thickness around RC anchors.',
+      category: FormCategory.track,
+      routePath: '/forms/t7-2',
+      measurementInterval: 'Per RC anchor',
+    ),
+    FormInfo(
+      id: 't8',
+      code: 'Form T-8',
+      title: "Sleeper Spacing & Squareness",
+      description:
+          'Measurement record of sleeper spacing and squareness with synthetic sleepers on solid-bed track.',
+      category: FormCategory.track,
+      routePath: '/forms/t8',
+      measurementInterval: 'Per sleeper',
+    ),
+    FormInfo(
+      id: 't9',
+      code: 'Form T-9',
+      title: 'Synthetic Resin Injection Thickness',
+      description:
+          'Measurement record of synthetic resin injection thickness with synthetic sleepers on solid-bed track.',
+      category: FormCategory.track,
+      routePath: '/forms/t9',
+      measurementInterval: 'Per sleeper',
+    ),
+    FormInfo(
+      id: 't10',
+      code: 'Form T-10',
+      title: 'Fastening Bolt Torque',
+      description:
+          'Measurement record of fastening bolt torque with synthetic sleepers on solid-bed track.',
+      category: FormCategory.track,
+      routePath: '/forms/t10',
+      measurementInterval: 'Per sleeper',
+    ),
   ];
 
   static FormInfo? getById(String id) {

@@ -36,3 +36,23 @@ final t2TableProvider =
     StateNotifierProvider<FormTableNotifier, List<Map<String, dynamic>>>(
   (ref) => FormTableNotifier(),
 );
+
+final t72TableProvider =
+    StateNotifierProvider<FormTableNotifier, List<Map<String, dynamic>>>(
+  (ref) => FormTableNotifier(),
+);
+
+final t8TableProvider =
+    StateNotifierProvider<FormTableNotifier, List<Map<String, dynamic>>>(
+  (ref) => FormTableNotifier(),
+);
+
+final t9TableProvider =
+    StateNotifierProvider<FormTableNotifier, List<Map<String, dynamic>>>(
+  (ref) => FormTableNotifier(),
+);
+
+final t10TableProvider =
+    StateNotifierProvider<FormTableNotifier, List<Map<String, dynamic>>>(
+  (ref) => FormTableNotifier(),
+);

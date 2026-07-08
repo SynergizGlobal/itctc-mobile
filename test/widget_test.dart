@@ -10,6 +10,10 @@ import 'package:itctc/features/forms/shared/models/form_table_header.dart';
 import 'package:itctc/features/forms/shared/utils/form_table_responsive.dart';
 import 'package:itctc/features/forms/shared/widgets/form_data_table.dart';
 import 'package:itctc/features/forms/t2/data/t2_table_columns.dart';
+import 'package:itctc/features/forms/t7_2/data/t72_table_columns.dart';
+import 'package:itctc/features/forms/t8/data/t8_table_columns.dart';
+import 'package:itctc/features/forms/t9/data/t9_table_columns.dart';
+import 'package:itctc/features/forms/t10/data/t10_table_columns.dart';
 import 'package:itctc/main.dart';
 
 void main() {
@@ -98,6 +102,10 @@ void main() {
       c1TableDefinition,
       c7TableDefinition,
       t2TableDefinition,
+      t72TableDefinition,
+      t8TableDefinition,
+      t9TableDefinition,
+      t10TableDefinition,
     ]) {
       for (final size in screenSizes) {
         testWidgets(
