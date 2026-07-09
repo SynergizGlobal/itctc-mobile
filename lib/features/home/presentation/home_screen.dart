@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/routing/route_names.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../providers/home_provider.dart';
 import 'widgets/form_card.dart';
-import 'widgets/theme_switcher.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -39,6 +40,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final forms = ref.watch(filteredFormsProvider);
     final theme = Theme.of(context);
     final hasQuery = ref.watch(searchQueryProvider).isNotEmpty;
+    final user = ref.watch(authProvider).user;
 
     return Scaffold(
       body: CustomScrollView(
@@ -48,7 +50,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             elevation: 0,
             backgroundColor: theme.colorScheme.surface,
             surfaceTintColor: Colors.transparent,
-            actions: const [ThemeSwitcher()],
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: IconButton(
+                  tooltip: 'Profile',
+                  onPressed: () => context.push(RouteNames.profile),
+                  icon: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    foregroundColor: theme.colorScheme.onPrimaryContainer,
+                    child: Text(
+                      user?.initials ?? '?',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -8,8 +8,8 @@ class FormCatalog {
       id: 'c1',
       code: 'Form C-1',
       title: 'Formation Width Measurement',
-      description:
-          'Measurement record of formation width for Earth work, Viaduct and Bridge sections.',
+      formatName:
+          'Measurement record of formation width (Earth work, Viaduct and Bridge section)',
       category: FormCategory.civil,
       routePath: '/forms/c1',
       measurementInterval: 'Straight: 100m · Curve: 20m',
@@ -18,8 +18,8 @@ class FormCatalog {
       id: 'c7',
       code: 'Form C-7',
       title: 'Noise Barrier Height',
-      description:
-          'Measurement record of height of noise barrier for Earth work, Viaduct and Bridge sections.',
+      formatName:
+          'Measurement record of height of noise barrier (Earth work, Viaduct and Bridge section)',
       category: FormCategory.civil,
       routePath: '/forms/c7',
       measurementInterval: 'Straight: 50m · Curve: 20m',
@@ -28,8 +28,7 @@ class FormCatalog {
       id: 't2',
       code: 'Form T-2',
       title: 'Track Irregularity',
-      description:
-          'Measurement record of finished state of track irregularity for Down and Up lines.',
+      formatName: 'Measurement record of Finished state of track Irregularity',
       category: FormCategory.track,
       routePath: '/forms/t2',
       measurementInterval: 'Per chainage point',
@@ -38,8 +37,7 @@ class FormCatalog {
       id: 't7-2',
       code: 'Form T-7-2',
       title: 'CAM Injected Thickness',
-      description:
-          'Measurement record of CAM injected thickness around RC anchors.',
+      formatName: 'Measurement record of CAM injected thickness',
       category: FormCategory.track,
       routePath: '/forms/t7-2',
       measurementInterval: 'Per RC anchor',
@@ -48,8 +46,8 @@ class FormCatalog {
       id: 't8',
       code: 'Form T-8',
       title: "Sleeper Spacing & Squareness",
-      description:
-          'Measurement record of sleeper spacing and squareness with synthetic sleepers on solid-bed track.',
+      formatName:
+          "Measurement record of Sleeper's spacing and squareness with Synthetic Sleepers",
       category: FormCategory.track,
       routePath: '/forms/t8',
       measurementInterval: 'Per sleeper',
@@ -58,8 +56,8 @@ class FormCatalog {
       id: 't9',
       code: 'Form T-9',
       title: 'Synthetic Resin Injection Thickness',
-      description:
-          'Measurement record of synthetic resin injection thickness with synthetic sleepers on solid-bed track.',
+      formatName:
+          'Measurement record of Synthetic Resin injection thickness with Synthetic Sleepers',
       category: FormCategory.track,
       routePath: '/forms/t9',
       measurementInterval: 'Per sleeper',
@@ -68,8 +66,7 @@ class FormCatalog {
       id: 't10',
       code: 'Form T-10',
       title: 'Fastening Bolt Torque',
-      description:
-          'Measurement record of fastening bolt torque with synthetic sleepers on solid-bed track.',
+      formatName: 'Measurement record of Fastening Bolt with Synthetic Sleepers',
       category: FormCategory.track,
       routePath: '/forms/t10',
       measurementInterval: 'Per sleeper',

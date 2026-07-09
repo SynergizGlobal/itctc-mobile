@@ -31,7 +31,7 @@ class FormCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  form.category.icon,
+                  FormInfo.listIcon,
                   color: theme.colorScheme.onPrimaryContainer,
                   size: 24,
                 ),
@@ -57,9 +57,11 @@ class FormCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      form.description,
-                      style: theme.textTheme.bodySmall,
-                      maxLines: 2,
+                      form.formatName,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (form.measurementInterval != null) ...[

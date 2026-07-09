@@ -13,7 +13,7 @@ bool formMatchesSearchQuery(FormInfo form, String query) {
     form.id,
     form.code,
     form.title,
-    form.description,
+    form.formatName,
     form.category.label,
   ];
 

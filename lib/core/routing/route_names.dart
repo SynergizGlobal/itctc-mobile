@@ -1,6 +1,9 @@
 class RouteNames {
   RouteNames._();
 
+  static const String splash = '/splash';
+  static const String login = '/login';
+  static const String profile = '/profile';
   static const String home = '/';
   static const String formC1 = '/forms/c1';
   static const String formC1Entry = '/forms/c1/entry';

@@ -14,12 +14,28 @@ import 'package:itctc/features/forms/t7_2/data/t72_table_columns.dart';
 import 'package:itctc/features/forms/t8/data/t8_table_columns.dart';
 import 'package:itctc/features/forms/t9/data/t9_table_columns.dart';
 import 'package:itctc/features/forms/t10/data/t10_table_columns.dart';
+import 'package:itctc/features/auth/providers/auth_provider.dart';
 import 'package:itctc/main.dart';
 
 void main() {
-  testWidgets('App loads home screen', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: ItctcApp()));
+  Future<void> pumpApp(WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authProvider.overrideWith((ref) {
+            final notifier = AuthNotifier();
+            notifier.authenticateForTesting();
+            return notifier;
+          }),
+        ],
+        child: const ItctcApp(),
+      ),
+    );
     await tester.pumpAndSettle();
+  }
+
+  testWidgets('App loads home screen', (WidgetTester tester) async {
+    await pumpApp(tester);
 
     expect(find.text('ITCTC Forms'), findsOneWidget);
   });
@@ -185,7 +201,18 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(360, 640));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    await tester.pumpWidget(const ProviderScope(child: ItctcApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authProvider.overrideWith((ref) {
+            final notifier = AuthNotifier();
+            notifier.authenticateForTesting();
+            return notifier;
+          }),
+        ],
+        child: const ItctcApp(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     final context = tester.element(find.text('ITCTC Forms'));
