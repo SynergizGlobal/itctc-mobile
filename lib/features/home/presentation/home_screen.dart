@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/routing/route_names.dart';
+import '../../../core/services/dialog_service.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../data/form_catalog.dart';
+import '../models/form_info.dart';
 import '../providers/home_provider.dart';
 import 'widgets/form_card.dart';
 
@@ -35,12 +38,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.read(searchQueryProvider.notifier).state = '';
   }
 
+  Future<void> _handleFormTap(FormInfo form) async {
+    if (form.isImplemented) {
+      await context.push(form.routePath);
+      return;
+    }
+
+    await DialogService.showAlert(
+      title: '${form.code} coming next',
+      message:
+          '${form.title} is listed in the home catalog so planning stays clear, but this form screen is not developed yet.',
+      primaryAction: 'OK',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final forms = ref.watch(filteredFormsProvider);
     final theme = Theme.of(context);
     final hasQuery = ref.watch(searchQueryProvider).isNotEmpty;
     final user = ref.watch(authProvider).user;
+    final readyCount = FormCatalog.readyCount;
+    final plannedCount = FormCatalog.plannedCount;
 
     return Scaffold(
       body: CustomScrollView(
@@ -113,11 +132,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: Text(
-                '${forms.length} Available Forms',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${forms.length} Available Forms',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _StatusChip(
+                        label: '$readyCount ready',
+                        icon: Icons.check_circle_rounded,
+                        backgroundColor: theme.colorScheme.secondaryContainer,
+                        foregroundColor: theme.colorScheme.onSecondaryContainer,
+                      ),
+                      _StatusChip(
+                        label: '$plannedCount planned',
+                        icon: Icons.construction_rounded,
+                        backgroundColor: theme.colorScheme.tertiaryContainer,
+                        foregroundColor: theme.colorScheme.onTertiaryContainer,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -153,7 +196,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   final form = forms[index];
                   return FormCard(
                     form: form,
-                    onTap: () => context.push(form.routePath),
+                    onTap: () => _handleFormTap(form),
                   );
                 },
               ),
@@ -195,5 +238,46 @@ class _StickySearchHeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _StickySearchHeaderDelegate oldDelegate) {
     return oldDelegate.backgroundColor != backgroundColor ||
         oldDelegate.child != child;
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({
+    required this.label,
+    required this.icon,
+    required this.backgroundColor,
+    required this.foregroundColor,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color backgroundColor;
+  final Color foregroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: foregroundColor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: foregroundColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

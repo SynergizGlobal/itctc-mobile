@@ -9,6 +9,7 @@ import 'package:itctc/features/forms/c7/data/c7_table_columns.dart';
 import 'package:itctc/features/forms/shared/models/form_table_header.dart';
 import 'package:itctc/features/forms/shared/utils/form_table_responsive.dart';
 import 'package:itctc/features/forms/shared/widgets/form_data_table.dart';
+import 'package:itctc/features/home/data/form_catalog.dart';
 import 'package:itctc/features/forms/t2/data/t2_table_columns.dart';
 import 'package:itctc/features/forms/t7_2/data/t72_table_columns.dart';
 import 'package:itctc/features/forms/t8/data/t8_table_columns.dart';
@@ -38,6 +39,30 @@ void main() {
     await pumpApp(tester);
 
     expect(find.text('ITCTC Forms'), findsOneWidget);
+  });
+
+  testWidgets('Home screen shows full staged form catalog', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    expect(FormCatalog.allForms.length, 63);
+    expect(find.text('63 Available Forms'), findsOneWidget);
+    expect(find.text('7 ready'), findsOneWidget);
+    expect(find.text('56 planned'), findsOneWidget);
+    expect(find.text('Form C-1'), findsOneWidget);
+  });
+
+  testWidgets('Planned form card opens staging dialog instead of route', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.text('Form C-2'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Form C-2 coming next'), findsOneWidget);
+    expect(find.textContaining('not developed yet'), findsOneWidget);
   });
 
   group('FormTableMetrics breakpoints', () {
