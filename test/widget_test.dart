@@ -41,28 +41,28 @@ void main() {
     expect(find.text('ITCTC Forms'), findsOneWidget);
   });
 
-  testWidgets('Home screen shows full staged form catalog', (
+  testWidgets('Home screen shows only ready forms', (
     WidgetTester tester,
   ) async {
     await pumpApp(tester);
 
     expect(FormCatalog.allForms.length, 63);
-    expect(find.text('63 Available Forms'), findsOneWidget);
-    expect(find.text('7 ready'), findsOneWidget);
-    expect(find.text('56 planned'), findsOneWidget);
+    expect(FormCatalog.readyCount, 10);
+    expect(find.text('10 Forms Available'), findsOneWidget);
     expect(find.text('Form C-1'), findsOneWidget);
+    expect(find.text('Form C-2'), findsNothing);
   });
 
-  testWidgets('Planned form card opens staging dialog instead of route', (
+  testWidgets('Search does not surface planned forms', (
     WidgetTester tester,
   ) async {
     await pumpApp(tester);
 
-    await tester.tap(find.text('Form C-2'));
+    await tester.enterText(find.byType(TextField), 'c-2');
     await tester.pumpAndSettle();
 
-    expect(find.text('Form C-2 coming next'), findsOneWidget);
-    expect(find.textContaining('not developed yet'), findsOneWidget);
+    expect(find.text('Form C-2'), findsNothing);
+    expect(find.text('No forms match your search'), findsOneWidget);
   });
 
   group('FormTableMetrics breakpoints', () {

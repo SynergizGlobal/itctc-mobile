@@ -42,6 +42,45 @@ class UpDownSelector extends StatelessWidget {
   }
 }
 
+class ChainageKmMFields extends StatelessWidget {
+  const ChainageKmMFields({
+    super.key,
+    required this.kmController,
+    required this.mController,
+    this.onChanged,
+  });
+
+  final TextEditingController kmController;
+  final TextEditingController mController;
+  final VoidCallback? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: TextFormField(
+            controller: kmController,
+            decoration: const InputDecoration(labelText: 'Chainage (km)', hintText: '0'),
+            keyboardType: TextInputType.number,
+            onChanged: (_) => onChanged?.call(),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextFormField(
+            controller: mController,
+            decoration: const InputDecoration(labelText: 'Chainage (m)', hintText: '000'),
+            keyboardType: TextInputType.number,
+            onChanged: (_) => onChanged?.call(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class SolidBedChainageFields extends StatelessWidget {
   const SolidBedChainageFields({
     super.key,

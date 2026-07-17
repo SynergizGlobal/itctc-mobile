@@ -20,6 +20,12 @@ import '../../features/forms/t9/presentation/t9_form_screen.dart';
 import '../../features/forms/t9/presentation/t9_table_screen.dart';
 import '../../features/forms/t10/presentation/t10_form_screen.dart';
 import '../../features/forms/t10/presentation/t10_table_screen.dart';
+import '../../features/forms/t13/presentation/t13_form_screen.dart';
+import '../../features/forms/t13/presentation/t13_table_screen.dart';
+import '../../features/forms/t21/presentation/t21_form_screen.dart';
+import '../../features/forms/t21/presentation/t21_table_screen.dart';
+import '../../features/forms/t22/presentation/t22_form_screen.dart';
+import '../../features/forms/t22/presentation/t22_table_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../services/error_handler.dart';
@@ -148,6 +154,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'entry',
             builder: (context, state) => T10FormScreen(editIndex: _parseEditIndex(state)),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: RouteNames.formT13,
+        builder: (context, state) => const T13TableScreen(),
+        routes: [
+          GoRoute(
+            path: 'entry',
+            builder: (context, state) => T13FormScreen(editIndex: _parseEditIndex(state)),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: RouteNames.formT21,
+        builder: (context, state) => const T21TableScreen(),
+        routes: [
+          GoRoute(
+            path: 'entry',
+            builder: (context, state) => T21FormScreen(editIndex: _parseEditIndex(state)),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: RouteNames.formT22,
+        builder: (context, state) => const T22TableScreen(),
+        routes: [
+          GoRoute(
+            path: 'entry',
+            builder: (context, state) => T22FormScreen(editIndex: _parseEditIndex(state)),
           ),
         ],
       ),

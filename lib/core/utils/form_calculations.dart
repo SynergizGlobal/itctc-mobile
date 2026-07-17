@@ -64,6 +64,28 @@ class FormCalculations {
     return round(measured - design);
   }
 
+  /// Difference = Measured - Design (T-13 fouling mark)
+  static double calculateDifference({
+    required double design,
+    required double measured,
+  }) {
+    return round((measured - design) * 1000) / 1000;
+  }
+
+  /// T-21 distance from fouling mark to insulated joint must be 5.0 m or more.
+  static bool isFoulingDistanceWithinTolerance({required double measuredMeters}) {
+    return measuredMeters >= 5.0;
+  }
+
+  /// T-22 buffer stop measurement point standard values (mm).
+  static const List<double> t22StandardValuesMm = [
+    250,
+    5000,
+    1000,
+    3400,
+    3900,
+  ];
+
   static bool isWithinTolerance({
     required double irregularity,
     required double tolerance,

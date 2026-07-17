@@ -19,4 +19,10 @@ class RouteNames {
   static const String formT9Entry = '/forms/t9/entry';
   static const String formT10 = '/forms/t10';
   static const String formT10Entry = '/forms/t10/entry';
+  static const String formT13 = '/forms/t13';
+  static const String formT13Entry = '/forms/t13/entry';
+  static const String formT21 = '/forms/t21';
+  static const String formT21Entry = '/forms/t21/entry';
+  static const String formT22 = '/forms/t22';
+  static const String formT22Entry = '/forms/t22/entry';
 }

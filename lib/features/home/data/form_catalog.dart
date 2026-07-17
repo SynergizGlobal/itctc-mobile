@@ -515,7 +515,7 @@ class FormCatalog {
       formatName: 'Measurement record of Fouling Mark',
       category: FormCategory.track,
       routePath: '/forms/t13',
-      buildStatus: FormBuildStatus.planned,
+      buildStatus: FormBuildStatus.ready,
     ),
     FormInfo(
       id: 't14',
@@ -588,7 +588,7 @@ class FormCatalog {
       formatName: 'Measurement record of Track effective length in stations and depots',
       category: FormCategory.track,
       routePath: '/forms/t21',
-      buildStatus: FormBuildStatus.planned,
+      buildStatus: FormBuildStatus.ready,
     ),
     FormInfo(
       id: 't22',
@@ -597,7 +597,7 @@ class FormCatalog {
       formatName: 'Measurement record of Buffer Stop (1st GRADE with GRAVEL FILL)',
       category: FormCategory.track,
       routePath: '/forms/t22',
-      buildStatus: FormBuildStatus.planned,
+      buildStatus: FormBuildStatus.ready,
     ),
     FormInfo(
       id: 't23',

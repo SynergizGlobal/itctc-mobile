@@ -8,9 +8,16 @@ final searchQueryProvider = StateProvider<String>((ref) => '');
 
 final filteredFormsProvider = Provider<List<FormInfo>>((ref) {
   final query = ref.watch(searchQueryProvider);
-  if (query.trim().isEmpty) return FormCatalog.allForms;
+  final catalogOrder = {
+    for (var i = 0; i < FormCatalog.allForms.length; i++)
+      FormCatalog.allForms[i].id: i,
+  };
 
-  return FormCatalog.allForms
+  final forms = FormCatalog.allForms
+      .where((form) => form.isImplemented)
       .where((form) => formMatchesSearchQuery(form, query))
-      .toList();
+      .toList()
+    ..sort((a, b) => catalogOrder[a.id]!.compareTo(catalogOrder[b.id]!));
+
+  return forms;
 });
