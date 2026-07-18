@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../providers/form_table_providers.dart';
+import '../../shared/widgets/form_inspection_table_scaffold.dart';
+import '../../../inspections/providers/inspection_store_provider.dart';
 import '../models/c1_entry.dart';
 import 'c1_form_stepper.dart';
 
 class C1FormScreen extends ConsumerStatefulWidget {
-  const C1FormScreen({super.key, this.editIndex});
+  const C1FormScreen({super.key, this.inspectionId});
 
-  final int? editIndex;
+  final String? inspectionId;
 
   @override
   ConsumerState<C1FormScreen> createState() => _C1FormScreenState();
@@ -29,10 +29,10 @@ class _C1FormScreenState extends ConsumerState<C1FormScreen> {
     if (_loaded) return;
     _loaded = true;
 
-    if (widget.editIndex != null) {
-      final rows = ref.read(c1TableProvider);
-      if (widget.editIndex! < rows.length) {
-        _entry = C1Entry.fromMap(rows[widget.editIndex!]);
+    if (widget.inspectionId != null) {
+      final existing = ref.read(inspectionByIdProvider(widget.inspectionId!));
+      if (existing != null) {
+        _entry = C1Entry.fromMap(existing.payload);
         return;
       }
     }
@@ -44,21 +44,24 @@ class _C1FormScreenState extends ConsumerState<C1FormScreen> {
     return _entry!;
   }
 
-  void _saveToTable() {
-    final record = entry.toJson();
-    if (widget.editIndex != null) {
-      ref.read(c1TableProvider.notifier).updateRecord(widget.editIndex!, record);
-    } else {
-      ref.read(c1TableProvider.notifier).addRecord(record);
-    }
-    context.pop();
+  Future<void> _persist({required bool submitForReview}) async {
+    await saveFormInspection(
+      ref: ref,
+      context: context,
+      formId: 'c1',
+      formCode: 'Form C-1',
+      title: 'Formation Width Measurement',
+      payload: entry.toJson(),
+      inspectionId: widget.inspectionId,
+      submitForReview: submitForReview,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     _ensureLoaded();
     final theme = Theme.of(context);
-    final isEdit = widget.editIndex != null;
+    final isEdit = widget.inspectionId != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -78,7 +81,8 @@ class _C1FormScreenState extends ConsumerState<C1FormScreen> {
       body: C1FormStepper(
         entry: entry,
         isLoading: false,
-        onSubmit: _saveToTable,
+        onSubmit: () => _persist(submitForReview: true),
+        onSaveDraft: () => _persist(submitForReview: false),
       ),
     );
   }

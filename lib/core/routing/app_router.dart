@@ -26,14 +26,14 @@ import '../../features/forms/t21/presentation/t21_form_screen.dart';
 import '../../features/forms/t21/presentation/t21_table_screen.dart';
 import '../../features/forms/t22/presentation/t22_form_screen.dart';
 import '../../features/forms/t22/presentation/t22_table_screen.dart';
+import '../../features/inspections/presentation/inspection_preview_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../services/error_handler.dart';
 import 'route_names.dart';
 
-int? _parseEditIndex(GoRouterState state) {
-  final indexStr = state.uri.queryParameters['index'];
-  return indexStr != null ? int.tryParse(indexStr) : null;
+String? _parseInspectionId(GoRouterState state) {
+  return state.uri.queryParameters['inspectionId'];
 }
 
 final _routerRefreshProvider = Provider<ValueNotifier<int>>((ref) {
@@ -93,7 +93,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'entry',
-            builder: (context, state) => C1FormScreen(editIndex: _parseEditIndex(state)),
+            builder: (context, state) => C1FormScreen(inspectionId: _parseInspectionId(state)),
           ),
         ],
       ),
@@ -103,7 +103,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'entry',
-            builder: (context, state) => C7FormScreen(editIndex: _parseEditIndex(state)),
+            builder: (context, state) => C7FormScreen(inspectionId: _parseInspectionId(state)),
           ),
         ],
       ),
@@ -113,7 +113,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'entry',
-            builder: (context, state) => T2FormScreen(editIndex: _parseEditIndex(state)),
+            builder: (context, state) => T2FormScreen(inspectionId: _parseInspectionId(state)),
           ),
         ],
       ),
@@ -123,7 +123,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'entry',
-            builder: (context, state) => T72FormScreen(editIndex: _parseEditIndex(state)),
+            builder: (context, state) => T72FormScreen(inspectionId: _parseInspectionId(state)),
           ),
         ],
       ),
@@ -133,7 +133,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'entry',
-            builder: (context, state) => T8FormScreen(editIndex: _parseEditIndex(state)),
+            builder: (context, state) => T8FormScreen(inspectionId: _parseInspectionId(state)),
           ),
         ],
       ),
@@ -143,7 +143,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'entry',
-            builder: (context, state) => T9FormScreen(editIndex: _parseEditIndex(state)),
+            builder: (context, state) => T9FormScreen(inspectionId: _parseInspectionId(state)),
           ),
         ],
       ),
@@ -153,7 +153,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'entry',
-            builder: (context, state) => T10FormScreen(editIndex: _parseEditIndex(state)),
+            builder: (context, state) => T10FormScreen(inspectionId: _parseInspectionId(state)),
           ),
         ],
       ),
@@ -163,7 +163,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'entry',
-            builder: (context, state) => T13FormScreen(editIndex: _parseEditIndex(state)),
+            builder: (context, state) => T13FormScreen(inspectionId: _parseInspectionId(state)),
           ),
         ],
       ),
@@ -173,7 +173,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'entry',
-            builder: (context, state) => T21FormScreen(editIndex: _parseEditIndex(state)),
+            builder: (context, state) => T21FormScreen(inspectionId: _parseInspectionId(state)),
           ),
         ],
       ),
@@ -183,9 +183,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'entry',
-            builder: (context, state) => T22FormScreen(editIndex: _parseEditIndex(state)),
+            builder: (context, state) => T22FormScreen(inspectionId: _parseInspectionId(state)),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/inspections/:id/preview',
+        builder: (context, state) => InspectionPreviewScreen(
+          inspectionId: state.pathParameters['id']!,
+        ),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

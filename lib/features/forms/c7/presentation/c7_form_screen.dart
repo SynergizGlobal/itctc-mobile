@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
+import '../../shared/widgets/form_inspection_table_scaffold.dart';
+import '../../../inspections/providers/inspection_store_provider.dart';
 
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/calculated_value_field.dart';
 import '../../../../core/widgets/form_widgets.dart';
-import '../../providers/form_table_providers.dart';
 import '../../shared/utils/form_site_capture_validation.dart';
 import '../../shared/widgets/form_entry_stepper_layout.dart';
 import '../../shared/widgets/form_attachments_field.dart';
@@ -14,9 +15,9 @@ import '../../shared/models/form_site_capture.dart';
 import '../models/c7_entry.dart';
 
 class C7FormScreen extends ConsumerStatefulWidget {
-  const C7FormScreen({super.key, this.editIndex});
+  const C7FormScreen({super.key, this.inspectionId});
 
-  final int? editIndex;
+  final String? inspectionId;
 
   @override
   ConsumerState<C7FormScreen> createState() => _C7FormScreenState();
@@ -39,10 +40,10 @@ class _C7FormScreenState extends ConsumerState<C7FormScreen> {
     if (_loaded) return;
     _loaded = true;
 
-    if (widget.editIndex != null) {
-      final rows = ref.read(c7TableProvider);
-      if (widget.editIndex! < rows.length) {
-        _entry = C7Entry.fromMap(rows[widget.editIndex!]);
+    if (widget.inspectionId != null) {
+      final existing = ref.read(inspectionByIdProvider(widget.inspectionId!));
+      if (existing != null) {
+        _entry = C7Entry.fromMap(existing.payload);
         return;
       }
     }
@@ -56,19 +57,22 @@ class _C7FormScreenState extends ConsumerState<C7FormScreen> {
 
   void _refresh() => setState(() {});
 
-  void _saveToTable() {
-    final record = e.toJson();
-    if (widget.editIndex != null) {
-      ref.read(c7TableProvider.notifier).updateRecord(widget.editIndex!, record);
-    } else {
-      ref.read(c7TableProvider.notifier).addRecord(record);
-    }
-    context.pop();
+  Future<void> _persist({required bool submitForReview}) async {
+    await saveFormInspection(
+      ref: ref,
+      context: context,
+      formId: 'c7',
+      formCode: 'Form C-7',
+      title: 'Noise Barrier Height',
+      payload: e.toJson(),
+      inspectionId: widget.inspectionId,
+      submitForReview: submitForReview,
+    );
   }
 
-  void _goNext() {
+  Future<void> _goNext() async {
     if (_step == _stepCount - 1) {
-      _saveToTable();
+      await _persist(submitForReview: true);
       return;
     }
     if (!FormSiteCaptureValidation.guardStep(e.siteCapture, _step + 1)) {
@@ -88,7 +92,7 @@ class _C7FormScreenState extends ConsumerState<C7FormScreen> {
   Widget build(BuildContext context) {
     _ensureLoaded();
     final theme = Theme.of(context);
-    final isEdit = widget.editIndex != null;
+    final isEdit = widget.inspectionId != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -106,6 +110,8 @@ class _C7FormScreenState extends ConsumerState<C7FormScreen> {
         ),
       ),
       body: FormEntryStepperLayout(
+        submitLabel: 'Submit for Review',
+        onSaveDraft: () => _persist(submitForReview: false),
         stepCount: _stepCount,
         currentStep: _step,
         isLoading: false,

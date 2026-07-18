@@ -16,11 +16,13 @@ class C1FormStepper extends StatefulWidget {
     required this.entry,
     required this.isLoading,
     required this.onSubmit,
+    this.onSaveDraft,
   });
 
   final C1Entry entry;
   final bool isLoading;
   final VoidCallback onSubmit;
+  final VoidCallback? onSaveDraft;
 
   @override
   State<C1FormStepper> createState() => _C1FormStepperState();
@@ -58,6 +60,8 @@ class _C1FormStepperState extends State<C1FormStepper> {
       stepCount: _stepCount,
       currentStep: _step,
       isLoading: widget.isLoading,
+      submitLabel: 'Submit for Review',
+      onSaveDraft: widget.onSaveDraft,
       onStepTap: _goToStep,
       onPrevious: () {
         if (_step > 0) setState(() => _step--);

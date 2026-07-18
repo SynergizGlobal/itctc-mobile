@@ -25,4 +25,6 @@ class RouteNames {
   static const String formT21Entry = '/forms/t21/entry';
   static const String formT22 = '/forms/t22';
   static const String formT22Entry = '/forms/t22/entry';
+
+  static String inspectionPreview(String id) => '/inspections/$id/preview';
 }

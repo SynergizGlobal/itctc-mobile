@@ -14,6 +14,11 @@ class FormEntryStepperLayout extends StatelessWidget {
     required this.child,
     this.onStepTap,
     this.header,
+    this.nextLabel,
+    this.submitLabel = 'Submit',
+    this.onSaveDraft,
+    this.saveDraftLabel = 'Save Draft',
+    this.readOnly = false,
   });
 
   final int stepCount;
@@ -24,6 +29,11 @@ class FormEntryStepperLayout extends StatelessWidget {
   final Widget child;
   final ValueChanged<int>? onStepTap;
   final Widget? header;
+  final String? nextLabel;
+  final String submitLabel;
+  final VoidCallback? onSaveDraft;
+  final String saveDraftLabel;
+  final bool readOnly;
 
   bool get _isLastStep => currentStep == stepCount - 1;
   bool get _canGoPrevious => currentStep > 0;
@@ -59,51 +69,71 @@ class FormEntryStepperLayout extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            border: Border(top: BorderSide(color: theme.dividerColor)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _canGoPrevious && !isLoading ? onPrevious : null,
-                      child: const Text('Previous'),
+        if (!readOnly)
+          Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              border: Border(top: BorderSide(color: theme.dividerColor)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed:
+                                _canGoPrevious && !isLoading ? onPrevious : null,
+                            child: const Text('Previous'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        if (_isLastStep && onSaveDraft != null) ...[
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: isLoading ? null : onSaveDraft,
+                              child: Text(saveDraftLabel),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : onNext,
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    _isLastStep
+                                        ? submitLabel
+                                        : (nextLabel ?? 'Next'),
+                                  ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : onNext,
-                      child: isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(_isLastStep ? 'Submit' : 'Next'),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }

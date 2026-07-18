@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/route_names.dart';
-import '../../providers/form_table_providers.dart';
-import '../../shared/widgets/form_table_scaffold.dart';
+import '../../shared/widgets/form_inspection_table_scaffold.dart';
 import '../data/c1_table_columns.dart';
 
 class C1TableScreen extends ConsumerWidget {
@@ -12,15 +10,13 @@ class C1TableScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rows = ref.watch(c1TableProvider);
-
-    return FormTableScaffold(
+    return FormInspectionTableScaffold(
+      formId: 'c1',
+      formCode: 'Form C-1',
       title: 'Form C-1',
-      subtitle: 'Formation Width Measurement',
+      subtitle: 'Formation Width — Earthwork / Viaduct / Bridge',
       definition: c1TableDefinition,
-      rows: rows,
-      onAdd: () => context.push(RouteNames.formC1Entry),
-      onRowTap: (index) => context.push('${RouteNames.formC1Entry}?index=$index'),
+      entryRoute: RouteNames.formC1Entry,
     );
   }
 }

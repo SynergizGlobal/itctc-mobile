@@ -11,6 +11,7 @@ class AppConstants {
   static const String prefRememberMe = 'auth_remember_me';
   static const String prefSavedUsername = 'auth_saved_username';
   static const String prefLoggedIn = 'auth_logged_in';
+  static const String prefInspections = 'inspections_local_v1';
 
   static const String appVersion = '1.0.0';
   static const String appBuild = '1';

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
+import '../../shared/widgets/form_inspection_table_scaffold.dart';
+import '../../../inspections/providers/inspection_store_provider.dart';
 
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/calculated_value_field.dart';
-import '../../providers/form_table_providers.dart';
 import '../../shared/form_shared_steps.dart';
 import '../../shared/models/form_site_capture.dart';
 import '../../shared/utils/form_site_capture_validation.dart';
@@ -15,9 +16,9 @@ import '../../shared/widgets/solid_bed_fields.dart';
 import '../models/t72_entry.dart';
 
 class T72FormScreen extends ConsumerStatefulWidget {
-  const T72FormScreen({super.key, this.editIndex});
+  const T72FormScreen({super.key, this.inspectionId});
 
-  final int? editIndex;
+  final String? inspectionId;
 
   @override
   ConsumerState<T72FormScreen> createState() => _T72FormScreenState();
@@ -40,10 +41,10 @@ class _T72FormScreenState extends ConsumerState<T72FormScreen> {
     if (_loaded) return;
     _loaded = true;
 
-    if (widget.editIndex != null) {
-      final rows = ref.read(t72TableProvider);
-      if (widget.editIndex! < rows.length) {
-        _entry = T72Entry.fromMap(rows[widget.editIndex!]);
+    if (widget.inspectionId != null) {
+      final existing = ref.read(inspectionByIdProvider(widget.inspectionId!));
+      if (existing != null) {
+        _entry = T72Entry.fromMap(existing.payload);
         return;
       }
     }
@@ -57,19 +58,22 @@ class _T72FormScreenState extends ConsumerState<T72FormScreen> {
 
   void _refresh() => setState(() {});
 
-  void _saveToTable() {
-    final record = e.toJson();
-    if (widget.editIndex != null) {
-      ref.read(t72TableProvider.notifier).updateRecord(widget.editIndex!, record);
-    } else {
-      ref.read(t72TableProvider.notifier).addRecord(record);
-    }
-    context.pop();
+  Future<void> _persist({required bool submitForReview}) async {
+    await saveFormInspection(
+      ref: ref,
+      context: context,
+      formId: 't7-2',
+      formCode: 'Form T-7-2',
+      title: 'CAM Injected Thickness',
+      payload: e.toJson(),
+      inspectionId: widget.inspectionId,
+      submitForReview: submitForReview,
+    );
   }
 
-  void _goNext() {
+  Future<void> _goNext() async {
     if (_step == _stepCount - 1) {
-      _saveToTable();
+      await _persist(submitForReview: true);
       return;
     }
     if (!FormSiteCaptureValidation.guardStep(e.siteCapture, _step + 1)) {
@@ -98,7 +102,7 @@ class _T72FormScreenState extends ConsumerState<T72FormScreen> {
   Widget build(BuildContext context) {
     _ensureLoaded();
     final theme = Theme.of(context);
-    final isEdit = widget.editIndex != null;
+    final isEdit = widget.inspectionId != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -116,6 +120,8 @@ class _T72FormScreenState extends ConsumerState<T72FormScreen> {
         ),
       ),
       body: FormEntryStepperLayout(
+        submitLabel: 'Submit for Review',
+        onSaveDraft: () => _persist(submitForReview: false),
         stepCount: _stepCount,
         currentStep: _step,
         isLoading: false,

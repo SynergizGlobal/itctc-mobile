@@ -468,7 +468,10 @@ class _DataTableBody extends StatelessWidget {
                 (c) => _DataCell(
                   text: c.column.value(row, index),
                   metrics: metrics,
-                  onTap: onRowTap != null ? () => onRowTap!(index) : null,
+                  onTap: c.column.cellBuilder == null && onRowTap != null
+                      ? () => onRowTap!(index)
+                      : null,
+                  child: c.column.cellBuilder?.call(context, row, index),
                 ),
               )
               .toList(),
@@ -612,41 +615,44 @@ class _DataCell extends StatelessWidget {
     required this.text,
     required this.metrics,
     this.onTap,
+    this.child,
   });
 
   final String text;
   final FormTableMetrics metrics;
   final VoidCallback? onTap;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
-    final child = ConstrainedBox(
+    final content = child ??
+        Text(
+          text,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontSize: metrics.dataFontSize,
+                color: FormTableTheme.bodyText(context),
+              ),
+          maxLines: metrics.isCompact ? 2 : 3,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        );
+
+    final cell = ConstrainedBox(
       constraints: BoxConstraints(minHeight: metrics.minRowHeight),
       child: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: metrics.dataPaddingH,
           vertical: metrics.dataPaddingV,
         ),
-        child: Center(
-          child: Text(
-            text,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: metrics.dataFontSize,
-                  color: FormTableTheme.bodyText(context),
-                ),
-            maxLines: metrics.isCompact ? 2 : 3,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-        ),
+        child: Center(child: content),
       ),
     );
 
-    if (onTap == null) return child;
+    if (onTap == null) return cell;
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(onTap: onTap, child: child),
+      child: InkWell(onTap: onTap, child: cell),
     );
   }
 }

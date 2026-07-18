@@ -78,7 +78,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: theme.textTheme.titleMedium,
                 ),
                 Text(
-                  AppConstants.appSubtitle,
+                  user == null
+                      ? AppConstants.appSubtitle
+                      : '${user.role.shortLabel} · ${AppConstants.appSubtitle}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

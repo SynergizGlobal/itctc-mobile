@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
+import '../../shared/widgets/form_inspection_table_scaffold.dart';
+import '../../../inspections/providers/inspection_store_provider.dart';
 
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/calculated_value_field.dart';
-import '../../providers/form_table_providers.dart';
 import '../../shared/form_shared_steps.dart';
 import '../../shared/models/form_site_capture.dart';
 import '../../shared/utils/form_site_capture_validation.dart';
@@ -15,9 +16,9 @@ import '../../shared/widgets/solid_bed_fields.dart';
 import '../models/t8_entry.dart';
 
 class T8FormScreen extends ConsumerStatefulWidget {
-  const T8FormScreen({super.key, this.editIndex});
+  const T8FormScreen({super.key, this.inspectionId});
 
-  final int? editIndex;
+  final String? inspectionId;
 
   @override
   ConsumerState<T8FormScreen> createState() => _T8FormScreenState();
@@ -40,10 +41,10 @@ class _T8FormScreenState extends ConsumerState<T8FormScreen> {
     if (_loaded) return;
     _loaded = true;
 
-    if (widget.editIndex != null) {
-      final rows = ref.read(t8TableProvider);
-      if (widget.editIndex! < rows.length) {
-        _entry = T8Entry.fromMap(rows[widget.editIndex!]);
+    if (widget.inspectionId != null) {
+      final existing = ref.read(inspectionByIdProvider(widget.inspectionId!));
+      if (existing != null) {
+        _entry = T8Entry.fromMap(existing.payload);
         return;
       }
     }
@@ -57,19 +58,22 @@ class _T8FormScreenState extends ConsumerState<T8FormScreen> {
 
   void _refresh() => setState(() {});
 
-  void _saveToTable() {
-    final record = e.toJson();
-    if (widget.editIndex != null) {
-      ref.read(t8TableProvider.notifier).updateRecord(widget.editIndex!, record);
-    } else {
-      ref.read(t8TableProvider.notifier).addRecord(record);
-    }
-    context.pop();
+  Future<void> _persist({required bool submitForReview}) async {
+    await saveFormInspection(
+      ref: ref,
+      context: context,
+      formId: 't8',
+      formCode: 'Form T-8',
+      title: 'Sleeper Spacing & Squareness',
+      payload: e.toJson(),
+      inspectionId: widget.inspectionId,
+      submitForReview: submitForReview,
+    );
   }
 
-  void _goNext() {
+  Future<void> _goNext() async {
     if (_step == _stepCount - 1) {
-      _saveToTable();
+      await _persist(submitForReview: true);
       return;
     }
     if (!FormSiteCaptureValidation.guardStep(e.siteCapture, _step + 1)) {
@@ -89,7 +93,7 @@ class _T8FormScreenState extends ConsumerState<T8FormScreen> {
   Widget build(BuildContext context) {
     _ensureLoaded();
     final theme = Theme.of(context);
-    final isEdit = widget.editIndex != null;
+    final isEdit = widget.inspectionId != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -107,6 +111,8 @@ class _T8FormScreenState extends ConsumerState<T8FormScreen> {
         ),
       ),
       body: FormEntryStepperLayout(
+        submitLabel: 'Submit for Review',
+        onSaveDraft: () => _persist(submitForReview: false),
         stepCount: _stepCount,
         currentStep: _step,
         isLoading: false,

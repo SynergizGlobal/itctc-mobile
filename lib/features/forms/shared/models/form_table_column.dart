@@ -1,13 +1,23 @@
+import 'package:flutter/widgets.dart';
+
 class FormTableColumn {
   const FormTableColumn({
     required this.title,
     required this.value,
     this.minWidth = 100,
+    this.cellBuilder,
   });
 
   final String title;
   final String Function(Map<String, dynamic> row, int rowIndex) value;
   final double minWidth;
+
+  /// Optional custom cell widget (Preview / Actions). Falls back to [value] text.
+  final Widget? Function(
+    BuildContext context,
+    Map<String, dynamic> row,
+    int rowIndex,
+  )? cellBuilder;
 }
 
 String tableCell(dynamic value) {
@@ -16,7 +26,11 @@ String tableCell(dynamic value) {
   return text.isEmpty ? '—' : text;
 }
 
-String chainageDisplay(Map<String, dynamic> row, {required String kmKey, required String mKey}) {
+String chainageDisplay(
+  Map<String, dynamic> row, {
+  required String kmKey,
+  required String mKey,
+}) {
   final km = tableCell(row[kmKey]);
   final m = tableCell(row[mKey]);
   if (km == '—' && m == '—') return '—';
