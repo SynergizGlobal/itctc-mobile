@@ -170,6 +170,10 @@ Future<void> runInspectionWorkflowAction({
           action: action,
           comment: comment,
         );
+
+    // Let any closing dialog / route settle before opening the next dialog.
+    await Future<void>.delayed(Duration.zero);
+    await WidgetsBinding.instance.endOfFrame;
     await DialogService.showSuccess(
       title: 'Updated',
       message: '${record.formCode} is now ${action.resultingStatus.label}.',
@@ -190,34 +194,33 @@ Future<String?> promptInspectionComment({
   if (context == null || !context.mounted) return null;
 
   final controller = TextEditingController();
-  try {
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: Text(title),
-          content: TextField(
-            controller: controller,
-            maxLines: 4,
-            decoration: InputDecoration(hintText: hint),
-            autofocus: true,
+  final result = await showDialog<String>(
+    context: context,
+    builder: (ctx) {
+      return AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          decoration: InputDecoration(hintText: hint),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-              child: const Text('Submit'),
-            ),
-          ],
-        );
-      },
-    );
-    if (result == null || result.isEmpty) return null;
-    return result;
-  } finally {
-    controller.dispose();
-  }
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
+            child: const Text('Submit'),
+          ),
+        ],
+      );
+    },
+  );
+  // Dispose after the dialog route has fully closed.
+  await Future<void>.delayed(Duration.zero);
+  controller.dispose();
+  if (result == null || result.isEmpty) return null;
+  return result;
 }

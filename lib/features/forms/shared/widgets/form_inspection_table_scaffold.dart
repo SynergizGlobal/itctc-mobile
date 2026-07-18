@@ -140,13 +140,17 @@ Future<void> saveFormInspection({
           inspectionId: inspectionId,
           submitForReview: submitForReview,
         );
-    if (context.mounted) context.pop();
+
+    // Show dialog while the form route is still mounted, then pop after it
+    // closes. Popping first then showing a dialog races Overlay deactivation.
+    if (!context.mounted) return;
     await DialogService.showSuccess(
       title: submitForReview ? 'Submitted for Review' : 'Draft Saved',
       message: submitForReview
           ? '$formCode has been submitted to PMC.'
           : '$formCode draft is saved locally.',
     );
+    if (context.mounted) context.pop();
   } catch (e) {
     await DialogService.showError(
       title: 'Save failed',

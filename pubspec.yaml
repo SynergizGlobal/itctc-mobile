@@ -24,6 +24,9 @@ dependencies:
   geocoding: ^4.0.0
   image_picker: ^1.1.2
   permission_handler: ^11.4.0
+  pdf: ^3.12.0
+  printing: ^5.14.3
+  share_plus: ^12.0.2
 
 dev_dependencies:
   flutter_test:

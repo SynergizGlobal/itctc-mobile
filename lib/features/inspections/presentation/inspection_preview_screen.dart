@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 
+import '../../../core/services/dialog_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../forms/shared/utils/workflow_table_columns.dart';
 import '../models/inspection_action.dart';
 import '../providers/inspection_store_provider.dart';
+import '../services/inspection_pdf_service.dart';
 import '../utils/inspection_ui_actions.dart';
 
 class InspectionPreviewScreen extends ConsumerWidget {
@@ -40,14 +43,13 @@ class InspectionPreviewScreen extends ConsumerWidget {
           createdByUsername: record.createdByUsername,
           currentUsername: user.username,
         );
-    final dateFormat = DateFormat('dd MMM yyyy, HH:mm');
 
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Preview', style: theme.textTheme.titleMedium),
+            Text('Print Preview', style: theme.textTheme.titleMedium),
             Text(
               record.formCode,
               style: theme.textTheme.bodySmall?.copyWith(
@@ -66,106 +68,65 @@ class InspectionPreviewScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        children: [
-          _PrintableCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  record.formCode,
-                  style: theme.textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 4),
-                Text(record.title, style: theme.textTheme.titleMedium),
-                const SizedBox(height: 12),
-                _MetaRow(label: 'Status', value: record.status.label),
-                _MetaRow(label: 'Created by', value: record.createdByUsername),
-                _MetaRow(
-                  label: 'Created',
-                  value: dateFormat.format(record.createdAt.toLocal()),
-                ),
-                _MetaRow(
-                  label: 'Updated',
-                  value: dateFormat.format(record.updatedAt.toLocal()),
-                ),
-                if (record.assignedToRole != null)
-                  _MetaRow(
-                    label: 'Assigned to',
-                    value: record.assignedToRole!,
-                  ),
-              ],
+      body: PdfPreview(
+        key: ValueKey(
+          '${record.id}_${record.updatedAt.millisecondsSinceEpoch}_'
+          '${record.status.apiCode}_${record.comments.length}',
+        ),
+        build: (format) => InspectionPdfService.buildPdf(
+          record,
+          pageFormat: format,
+        ),
+        initialPageFormat: PdfPageFormat.a4,
+        pdfFileName: InspectionPdfService.fileNameFor(record),
+        canChangePageFormat: false,
+        canChangeOrientation: false,
+        canDebug: false,
+        allowPrinting: true,
+        allowSharing: true,
+        maxPageWidth: 720,
+        scrollViewDecoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+        ),
+        pdfPreviewPageDecoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x33000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        actionBarTheme: PdfActionBarTheme(
+          backgroundColor: theme.colorScheme.surface,
+          iconColor: theme.colorScheme.onSurface,
+        ),
+        onPrintError: (context, error) {
+          DialogService.showError(
+            title: 'Print failed',
+            message: error.toString(),
+          );
+        },
+        loadingWidget: const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Building print layout…'),
+            ],
+          ),
+        ),
+        onError: (context, error) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              'Could not build preview:\n$error',
+              textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 16),
-          Text('Inspection details', style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          _PrintableCard(
-            child: Column(
-              children: [
-                for (final entry in _detailEntries(record.payload))
-                  FormPreviewDetailRow(
-                    label: entry.key,
-                    value: entry.value,
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('Attachments', style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          _PrintableCard(child: _AttachmentsBlock(payload: record.payload)),
-          const SizedBox(height: 16),
-          Text('Inspection journey', style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          _PrintableCard(
-            child: record.comments.isEmpty
-                ? const Text('No workflow events yet.')
-                : Column(
-                    children: [
-                      for (final event in record.comments)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                Icons.timeline,
-                                size: 18,
-                                color: theme.colorScheme.primary,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${event.action.label} · ${event.fromStatus.label} → ${event.toStatus.label}',
-                                      style: theme.textTheme.titleSmall,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      event.message,
-                                      style: theme.textTheme.bodyMedium,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '${event.authorUsername} (${event.authorRole}) · ${dateFormat.format(event.createdAt.toLocal())}',
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: theme.colorScheme.onSurfaceVariant,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-          ),
-        ],
+        ),
       ),
       bottomNavigationBar: reviewActions.isEmpty
           ? null
@@ -202,156 +163,6 @@ class InspectionPreviewScreen extends ConsumerWidget {
                 ),
               ),
             ),
-    );
-  }
-
-  List<MapEntry<String, String>> _detailEntries(Map<String, dynamic> payload) {
-    final skip = {
-      'id',
-      'attachments',
-      'siteCapture',
-      'inspectionId',
-      'status',
-      'statusLabel',
-      'createdByUsername',
-      'formId',
-      'formCode',
-      'title',
-    };
-    final entries = <MapEntry<String, String>>[];
-    payload.forEach((key, value) {
-      if (skip.contains(key)) return;
-      if (value is Map || value is List) return;
-      entries.add(MapEntry(_prettyKey(key), value?.toString() ?? '—'));
-    });
-
-    final site = payload['siteCapture'];
-    if (site is Map) {
-      final address = site['address']?.toString();
-      if (address != null && address.trim().isNotEmpty) {
-        entries.add(MapEntry('Location', address));
-      }
-      final selfie = site['selfiePath']?.toString();
-      if (selfie != null && selfie.trim().isNotEmpty) {
-        entries.add(const MapEntry('Selfie', 'Captured'));
-      }
-    }
-
-    if (entries.isEmpty) {
-      entries.add(const MapEntry('Details', 'No field values yet'));
-    }
-    return entries;
-  }
-
-  String _prettyKey(String key) {
-    final spaced = key.replaceAllMapped(
-      RegExp(r'([a-z])([A-Z])'),
-      (m) => '${m[1]} ${m[2]}',
-    );
-    if (spaced.isEmpty) return key;
-    return spaced[0].toUpperCase() + spaced.substring(1);
-  }
-}
-
-class FormPreviewDetailRow extends StatelessWidget {
-  const FormPreviewDetailRow({
-    super.key,
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value.trim().isEmpty ? '—' : value,
-              style: theme.textTheme.titleSmall,
-              textAlign: TextAlign.end,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MetaRow extends StatelessWidget {
-  const _MetaRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return FormPreviewDetailRow(label: label, value: value);
-  }
-}
-
-class _PrintableCard extends StatelessWidget {
-  const _PrintableCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: child,
-      ),
-    );
-  }
-}
-
-class _AttachmentsBlock extends StatelessWidget {
-  const _AttachmentsBlock({required this.payload});
-
-  final Map<String, dynamic> payload;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final raw = payload['attachments'];
-    if (raw is! List || raw.isEmpty) {
-      return Text(
-        'No attachments',
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-      );
-    }
-
-    return Column(
-      children: [
-        for (final item in raw)
-          if (item is Map)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              leading: const Icon(Icons.attach_file_rounded),
-              title: Text(item['name']?.toString() ?? 'Attachment'),
-              subtitle: Text(item['path']?.toString() ?? ''),
-            ),
-      ],
     );
   }
 }

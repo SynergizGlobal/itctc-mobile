@@ -44,7 +44,8 @@ final _routerRefreshProvider = Provider<ValueNotifier<int>>((ref) {
 });
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final auth = ref.watch(authProvider);
+  // Keep a single GoRouter instance. Watching auth here recreates the Navigator
+  // and Overlay mid-transition (dialogs), which triggers `_dependents.isEmpty`.
   final refresh = ref.watch(_routerRefreshProvider);
 
   return GoRouter(
@@ -52,6 +53,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: RouteNames.splash,
     refreshListenable: refresh,
     redirect: (context, state) {
+      final auth = ref.read(authProvider);
       final location = state.matchedLocation;
       final isSplash = location == RouteNames.splash;
       final isLogin = location == RouteNames.login;
