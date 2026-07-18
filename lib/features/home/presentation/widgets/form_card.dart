@@ -21,56 +21,56 @@ class FormCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   FormInfo.listIcon,
                   color: theme.colorScheme.onPrimaryContainer,
-                  size: 24,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       form.code,
-                      style: theme.textTheme.labelMedium?.copyWith(
+                      style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 2),
                     Text(
                       form.title,
-                      style: theme.textTheme.titleMedium,
-                      maxLines: 2,
+                      style: theme.textTheme.titleSmall,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
                     Text(
                       form.formatName,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
+                        height: 1.25,
                       ),
-                      maxLines: 3,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (form.measurementInterval != null) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 2),
                       Row(
                         children: [
                           Icon(
                             Icons.straighten_rounded,
-                            size: 14,
+                            size: 12,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(width: 4),
@@ -79,7 +79,10 @@ class FormCard extends StatelessWidget {
                               form.measurementInterval!,
                               style: theme.textTheme.labelSmall?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
+                                height: 1.2,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -90,6 +93,7 @@ class FormCard extends StatelessWidget {
               ),
               Icon(
                 Icons.chevron_right_rounded,
+                size: 22,
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ],
