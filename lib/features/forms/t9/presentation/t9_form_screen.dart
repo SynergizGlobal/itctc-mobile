@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/widgets/app_bar_title.dart';
+
 import '../../shared/widgets/form_inspection_table_scaffold.dart';
 import '../../../inspections/providers/inspection_store_provider.dart';
 
@@ -92,22 +94,13 @@ class _T9FormScreenState extends ConsumerState<T9FormScreen> {
   @override
   Widget build(BuildContext context) {
     _ensureLoaded();
-    final theme = Theme.of(context);
     final isEdit = widget.inspectionId != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(isEdit ? 'Edit Record' : 'Add Record', style: theme.textTheme.titleMedium),
-            Text(
-              'Form T-9 — Resin Injection Thickness',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
+        title: AppBarTitleBlock(
+          title: isEdit ? 'Edit Record' : 'Add Record',
+          subtitle: 'Form T-9 — Resin Injection Thickness',
         ),
       ),
       body: FormEntryStepperLayout(

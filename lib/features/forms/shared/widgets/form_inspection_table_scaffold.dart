@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/preferences/inspection_list_view_mode.dart';
 import '../../../../core/services/dialog_service.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_bar_title.dart';
 import '../../../auth/models/user_role.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../inspections/models/inspection_record.dart';
@@ -44,17 +46,21 @@ class FormInspectionTableScaffold extends ConsumerStatefulWidget {
 class _FormInspectionTableScaffoldState
     extends ConsumerState<FormInspectionTableScaffold> {
   late final TextEditingController _searchController;
+  late final FocusNode _searchFocus;
+  bool _searchOpen = false;
   String _query = '';
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    _searchFocus = FocusNode();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -85,9 +91,26 @@ class _FormInspectionTableScaffoldState
     return haystack.any((value) => value.contains(q));
   }
 
-  void _clearSearch() {
+  void _openSearch() {
+    setState(() => _searchOpen = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _searchFocus.requestFocus();
+    });
+  }
+
+  void _closeSearch() {
+    _searchFocus.unfocus();
+    _searchController.clear();
+    setState(() {
+      _searchOpen = false;
+      _query = '';
+    });
+  }
+
+  void _clearQuery() {
     _searchController.clear();
     setState(() => _query = '');
+    _searchFocus.requestFocus();
   }
 
   @override
@@ -95,7 +118,8 @@ class _FormInspectionTableScaffoldState
     final theme = Theme.of(context);
     final user = ref.watch(authProvider).user;
     final listMode = ref.watch(inspectionListViewModeProvider);
-    final inspections = _filter(ref.watch(formInspectionsProvider(widget.formId)));
+    final inspections =
+        _filter(ref.watch(formInspectionsProvider(widget.formId)));
     final rows = inspections.map(inspectionToTableRow).toList();
     final tableDefinition = withWorkflowColumns(
       widget.definition,
@@ -104,103 +128,96 @@ class _FormInspectionTableScaffoldState
     final canAdd = user?.role == UserRole.inspector;
     final hasQuery = _query.trim().isNotEmpty;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: LayoutBuilder(
-          builder: (context, constraints) {
-            final compact = MediaQuery.sizeOf(context).width < 360;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  widget.title,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontSize: compact ? 15 : null,
+    return PopScope(
+      canPop: !_searchOpen,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _searchOpen) _closeSearch();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          titleSpacing: _searchOpen ? 0 : null,
+          title: _searchOpen
+              ? TextField(
+                  controller: _searchController,
+                  focusNode: _searchFocus,
+                  textInputAction: TextInputAction.search,
+                  onChanged: (value) => setState(() => _query = value),
+                  style: AppTheme.appBarTitleStyle(theme.colorScheme.onSurface),
+                  decoration: InputDecoration(
+                    hintText: 'Search inspections…',
+                    hintStyle: AppTheme.appBarSubtitleStyle(
+                      theme.colorScheme.onSurfaceVariant,
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    filled: false,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    suffixIcon: hasQuery
+                        ? IconButton(
+                            tooltip: 'Clear',
+                            onPressed: _clearQuery,
+                            icon: const Icon(Icons.close_rounded),
+                          )
+                        : null,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                )
+              : AppBarTitleBlock(
+                  title: widget.title,
+                  subtitle: widget.subtitle,
                 ),
-                Text(
-                  widget.subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: compact ? 11 : null,
-                  ),
-                  maxLines: compact ? 1 : 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            );
-          },
+          actions: [
+            if (!_searchOpen)
+              IconButton(
+                tooltip: 'Search',
+                onPressed: _openSearch,
+                icon: const Icon(Icons.search_rounded),
+              ),
+          ],
         ),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: TextField(
-              controller: _searchController,
-              textInputAction: TextInputAction.search,
-              onChanged: (value) => setState(() => _query = value),
-              decoration: InputDecoration(
-                hintText: 'Search by chainage, status, user…',
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: hasQuery
-                    ? IconButton(
-                        tooltip: 'Clear',
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: _clearSearch,
-                      )
-                    : null,
+        body: listMode == InspectionListViewMode.table
+            ? FormDataTable(
+                definition: tableDefinition,
+                rows: rows,
+                emptyMessage: hasQuery
+                    ? 'No inspections match your search.'
+                    : canAdd
+                        ? 'No inspections yet.\nTap Add Inspection to start.'
+                        : 'No inspections available for review yet.',
+              )
+            : _CardsBody(
+                columns: widget.definition.columns,
+                inspections: inspections,
+                entryRoute: widget.entryRoute,
+                canAdd: canAdd,
+                hasQuery: hasQuery,
               ),
-            ),
-          ),
-          Expanded(
-            child: listMode == InspectionListViewMode.table
-                ? FormDataTable(
-                    definition: tableDefinition,
-                    rows: rows,
-                    emptyMessage: hasQuery
-                        ? 'No inspections match your search.'
-                        : canAdd
-                            ? 'No inspections yet.\nTap Add Inspection to start.'
-                            : 'No inspections available for review yet.',
-                  )
-                : _CardsBody(
-                    columns: widget.definition.columns,
-                    inspections: inspections,
-                    entryRoute: widget.entryRoute,
-                    canAdd: canAdd,
-                    hasQuery: hasQuery,
+        bottomNavigationBar: canAdd
+            ? Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  border: Border(
+                    top: BorderSide(color: FormTableTheme.border(context)),
                   ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: canAdd
-          ? Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                border: Border(
-                  top: BorderSide(color: FormTableTheme.border(context)),
                 ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => context.push(widget.entryRoute),
-                      icon: const Icon(Icons.add_rounded, size: 20),
-                      label: const Text('Add Inspection'),
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => context.push(widget.entryRoute),
+                        icon: const Icon(Icons.add_rounded, size: 20),
+                        label: const Text('Add Inspection'),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            )
-          : null,
+              )
+            : null,
+      ),
     );
   }
 }

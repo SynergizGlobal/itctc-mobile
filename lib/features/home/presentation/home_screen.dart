@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/routing/route_names.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_bar_title.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/home_provider.dart';
 import 'widgets/form_card.dart';
@@ -48,6 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SliverAppBar(
             pinned: true,
             elevation: 0,
+            toolbarHeight: AppTheme.appBarToolbarHeight,
             backgroundColor: theme.colorScheme.surface,
             surfaceTintColor: Colors.transparent,
             actions: [
@@ -57,12 +60,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   tooltip: 'Profile',
                   onPressed: () => context.push(RouteNames.profile),
                   icon: CircleAvatar(
-                    radius: 18,
+                    radius: 20,
                     backgroundColor: theme.colorScheme.primaryContainer,
                     foregroundColor: theme.colorScheme.onPrimaryContainer,
                     child: Text(
                       user?.initials ?? '?',
-                      style: theme.textTheme.labelMedium?.copyWith(
+                      style: theme.textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -70,22 +73,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ],
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppConstants.appName,
-                  style: theme.textTheme.titleMedium,
-                ),
-                Text(
-                  user == null
-                      ? AppConstants.appSubtitle
-                      : '${user.role.shortLabel} · ${AppConstants.appSubtitle}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+            title: AppBarTitleBlock(
+              title: AppConstants.appName,
+              subtitle: user == null
+                  ? AppConstants.appSubtitle
+                  : '${user.role.shortLabel} · ${AppConstants.appSubtitle}',
             ),
           ),
           SliverPersistentHeader(

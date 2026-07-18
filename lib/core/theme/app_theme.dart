@@ -6,6 +6,43 @@ import 'app_colors.dart';
 class AppTheme {
   AppTheme._();
 
+  static const double appBarToolbarHeight = 64;
+  static const double appBarIconSize = 26;
+
+  static TextStyle appBarTitleStyle(Color color) => GoogleFonts.plusJakartaSans(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: color,
+        letterSpacing: -0.2,
+      );
+
+  static TextStyle appBarSubtitleStyle(Color color) =>
+      GoogleFonts.plusJakartaSans(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: color,
+        height: 1.25,
+      );
+
+  static AppBarTheme _appBarTheme({
+    required Color background,
+    required Color foreground,
+  }) {
+    return AppBarTheme(
+      elevation: 0,
+      scrolledUnderElevation: 0.5,
+      centerTitle: false,
+      toolbarHeight: appBarToolbarHeight,
+      backgroundColor: background,
+      foregroundColor: foreground,
+      surfaceTintColor: Colors.transparent,
+      titleTextStyle: appBarTitleStyle(foreground),
+      iconTheme: IconThemeData(color: foreground, size: appBarIconSize),
+      actionsIconTheme: IconThemeData(color: foreground, size: appBarIconSize),
+      titleSpacing: 16,
+    );
+  }
+
   static TextTheme _buildTextTheme({
     required Color primary,
     required Color secondary,
@@ -73,20 +110,26 @@ class AppTheme {
       dividerColor: AppColors.lightTableBorder,
       scaffoldBackgroundColor: AppColors.lightBackground,
       textTheme: textTheme,
-      iconTheme: const IconThemeData(color: onSurfaceVariant),
-      appBarTheme: AppBarTheme(
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        centerTitle: false,
-        backgroundColor: AppColors.lightSurface,
-        foregroundColor: onSurface,
-        surfaceTintColor: Colors.transparent,
-        titleTextStyle: GoogleFonts.plusJakartaSans(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: onSurface,
+      iconTheme: const IconThemeData(color: onSurfaceVariant, size: 24),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          iconSize: appBarIconSize,
+          minimumSize: const Size(48, 48),
+          padding: const EdgeInsets.all(10),
         ),
-        iconTheme: const IconThemeData(color: onSurface),
+      ),
+      appBarTheme: _appBarTheme(
+        background: AppColors.lightSurface,
+        foreground: onSurface,
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          textStyle: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
@@ -250,20 +293,26 @@ class AppTheme {
       dividerColor: AppColors.darkTableBorder,
       scaffoldBackgroundColor: AppColors.darkBackground,
       textTheme: textTheme,
-      iconTheme: const IconThemeData(color: onSurfaceVariant),
-      appBarTheme: AppBarTheme(
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        centerTitle: false,
-        backgroundColor: AppColors.darkSurface,
-        foregroundColor: onSurface,
-        surfaceTintColor: Colors.transparent,
-        titleTextStyle: GoogleFonts.plusJakartaSans(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: onSurface,
+      iconTheme: const IconThemeData(color: onSurfaceVariant, size: 24),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          iconSize: appBarIconSize,
+          minimumSize: const Size(48, 48),
+          padding: const EdgeInsets.all(10),
         ),
-        iconTheme: const IconThemeData(color: onSurface),
+      ),
+      appBarTheme: _appBarTheme(
+        background: AppColors.darkSurface,
+        foreground: onSurface,
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          textStyle: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,

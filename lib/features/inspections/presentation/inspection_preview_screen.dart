@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 
 import '../../../core/services/dialog_service.dart';
+import '../../../core/widgets/app_bar_title.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../forms/shared/utils/workflow_table_columns.dart';
 import '../models/inspection_action.dart';
@@ -46,17 +47,9 @@ class InspectionPreviewScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Print Preview', style: theme.textTheme.titleMedium),
-            Text(
-              record.formCode,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
+        title: AppBarTitleBlock(
+          title: 'Print Preview',
+          subtitle: record.formCode,
         ),
         actions: [
           if (canEdit)
