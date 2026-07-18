@@ -58,7 +58,7 @@ FormTableDefinition withWorkflowColumns(
         minWidth: 168,
         value: (_, _) => 'Actions',
         cellBuilder: (context, row, _) {
-          return _InspectionActionsCell(
+          return InspectionRowActions(
             row: row,
             entryRoute: entryRoute,
           );
@@ -81,8 +81,10 @@ Map<String, dynamic> inspectionToTableRow(InspectionRecord record) {
   };
 }
 
-class _InspectionActionsCell extends ConsumerWidget {
-  const _InspectionActionsCell({
+/// Shared primary workflow button for table cells and list cards.
+class InspectionRowActions extends ConsumerWidget {
+  const InspectionRowActions({
+    super.key,
     required this.row,
     required this.entryRoute,
   });
@@ -94,7 +96,7 @@ class _InspectionActionsCell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
     final id = row['inspectionId']?.toString();
-    if (user == null || id == null) return const Text('—');
+    if (user == null || id == null) return const SizedBox.shrink();
 
     final status = InspectionStatus.tryParse(row['status']?.toString()) ??
         InspectionStatus.draft;
@@ -103,6 +105,8 @@ class _InspectionActionsCell extends ConsumerWidget {
       role: user.role,
       status: status,
     );
+    if (primaryLabel == null) return const SizedBox.shrink();
+
     final canEdit = InspectionUiActions.canEditFormData(
       role: user.role,
       status: status,
@@ -110,31 +114,19 @@ class _InspectionActionsCell extends ConsumerWidget {
       currentUsername: user.username,
     );
 
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      alignment: WrapAlignment.center,
-      children: [
-        TextButton(
-          onPressed: () => context.push(RouteNames.inspectionPreview(id)),
-          child: const Text('View'),
-        ),
-        if (primaryLabel != null)
-          FilledButton.tonal(
-            style: FilledButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-            ),
-            onPressed: () {
-              if (canEdit) {
-                context.push('$entryRoute?inspectionId=$id');
-              } else {
-                context.push(RouteNames.inspectionPreview(id));
-              }
-            },
-            child: Text(primaryLabel),
-          ),
-      ],
+    return FilledButton.tonal(
+      style: FilledButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+      ),
+      onPressed: () {
+        if (canEdit) {
+          context.push('$entryRoute?inspectionId=$id');
+        } else {
+          context.push(RouteNames.inspectionPreview(id));
+        }
+      },
+      child: Text(primaryLabel),
     );
   }
 }
@@ -171,7 +163,6 @@ Future<void> runInspectionWorkflowAction({
           comment: comment,
         );
 
-    // Let any closing dialog / route settle before opening the next dialog.
     await Future<void>.delayed(Duration.zero);
     await WidgetsBinding.instance.endOfFrame;
     await DialogService.showSuccess(
@@ -218,7 +209,6 @@ Future<String?> promptInspectionComment({
       );
     },
   );
-  // Dispose after the dialog route has fully closed.
   await Future<void>.delayed(Duration.zero);
   controller.dispose();
   if (result == null || result.isEmpty) return null;

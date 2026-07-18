@@ -16,9 +16,6 @@ import '../../auth/models/user_role.dart';
 import '../models/inspection_record.dart';
 
 /// Builds a print-ready inspection PDF and exports via system Print / Share.
-///
-/// Store-compliant: writes only to the app sandbox, then uses the system share
-/// sheet / print UI. No READ_MEDIA_* or WRITE_EXTERNAL_STORAGE.
 class InspectionPdfService {
   InspectionPdfService._();
 
@@ -305,7 +302,6 @@ class InspectionPdfService {
   }
 
   /// Share / save via the OS sheet (Files, Drive, AirDrop, etc.).
-  /// No broad media or storage permission — stays Play Store / App Store safe.
   static Future<void> sharePdf(InspectionRecord record) async {
     final bytes = await buildPdf(record);
     final name = fileNameFor(record);
@@ -321,8 +317,6 @@ class InspectionPdfService {
       ),
     );
   }
-
-  // --- helpers ---
 
   static List<MapEntry<String, String>> detailEntries(
     Map<String, dynamic> payload,

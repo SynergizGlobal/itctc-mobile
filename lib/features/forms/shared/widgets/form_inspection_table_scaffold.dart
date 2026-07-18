@@ -2,18 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/preferences/inspection_list_view_mode.dart';
 import '../../../../core/services/dialog_service.dart';
 import '../../../auth/models/user_role.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../inspections/models/inspection_record.dart';
 import '../../../inspections/providers/inspection_store_provider.dart';
+import '../models/form_table_column.dart';
 import '../models/form_table_header.dart';
 import '../utils/form_table_theme.dart';
+import '../utils/inspection_list_highlights.dart';
 import '../utils/workflow_table_columns.dart';
 import 'form_data_table.dart';
+import 'inspection_list_card.dart';
+import 'inspection_record_count_bar.dart';
 
-/// Shared table host for inspection-backed form lists.
-class FormInspectionTableScaffold extends ConsumerWidget {
+/// Shared table/card host for inspection-backed form lists.
+class FormInspectionTableScaffold extends ConsumerStatefulWidget {
   const FormInspectionTableScaffold({
     super.key,
     required this.formId,
@@ -32,16 +37,72 @@ class FormInspectionTableScaffold extends ConsumerWidget {
   final String entryRoute;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FormInspectionTableScaffold> createState() =>
+      _FormInspectionTableScaffoldState();
+}
+
+class _FormInspectionTableScaffoldState
+    extends ConsumerState<FormInspectionTableScaffold> {
+  late final TextEditingController _searchController;
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<InspectionRecord> _filter(List<InspectionRecord> source) {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return source;
+    return source.where((record) => _matches(record, q)).toList(growable: false);
+  }
+
+  bool _matches(InspectionRecord record, String q) {
+    final haystack = [
+      record.id,
+      record.status.label,
+      record.status.apiCode,
+      record.createdByUsername,
+      record.title,
+      record.formCode,
+      record.payload['chainageKm']?.toString(),
+      record.payload['chainageM']?.toString(),
+      record.payload['trackType']?.toString(),
+      record.payload['location']?.toString(),
+      record.payload['station']?.toString(),
+      if (record.payload['chainageKm'] != null ||
+          record.payload['chainageM'] != null)
+        'ch ${record.payload['chainageKm']}+${record.payload['chainageM']}',
+    ].whereType<String>().map((s) => s.toLowerCase());
+
+    return haystack.any((value) => value.contains(q));
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => _query = '');
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final user = ref.watch(authProvider).user;
-    final inspections = ref.watch(formInspectionsProvider(formId));
+    final listMode = ref.watch(inspectionListViewModeProvider);
+    final inspections = _filter(ref.watch(formInspectionsProvider(widget.formId)));
     final rows = inspections.map(inspectionToTableRow).toList();
     final tableDefinition = withWorkflowColumns(
-      definition,
-      entryRoute: entryRoute,
+      widget.definition,
+      entryRoute: widget.entryRoute,
     );
     final canAdd = user?.role == UserRole.inspector;
+    final hasQuery = _query.trim().isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -53,7 +114,7 @@ class FormInspectionTableScaffold extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  title,
+                  widget.title,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontSize: compact ? 15 : null,
                   ),
@@ -61,7 +122,7 @@ class FormInspectionTableScaffold extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  subtitle,
+                  widget.subtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: compact ? 11 : null,
@@ -74,12 +135,47 @@ class FormInspectionTableScaffold extends ConsumerWidget {
           },
         ),
       ),
-      body: FormDataTable(
-        definition: tableDefinition,
-        rows: rows,
-        emptyMessage: canAdd
-            ? 'No inspections yet.\nTap Add Inspection to start.'
-            : 'No inspections available for review yet.',
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: TextField(
+              controller: _searchController,
+              textInputAction: TextInputAction.search,
+              onChanged: (value) => setState(() => _query = value),
+              decoration: InputDecoration(
+                hintText: 'Search by chainage, status, user…',
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: hasQuery
+                    ? IconButton(
+                        tooltip: 'Clear',
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: _clearSearch,
+                      )
+                    : null,
+              ),
+            ),
+          ),
+          Expanded(
+            child: listMode == InspectionListViewMode.table
+                ? FormDataTable(
+                    definition: tableDefinition,
+                    rows: rows,
+                    emptyMessage: hasQuery
+                        ? 'No inspections match your search.'
+                        : canAdd
+                            ? 'No inspections yet.\nTap Add Inspection to start.'
+                            : 'No inspections available for review yet.',
+                  )
+                : _CardsBody(
+                    columns: widget.definition.columns,
+                    inspections: inspections,
+                    entryRoute: widget.entryRoute,
+                    canAdd: canAdd,
+                    hasQuery: hasQuery,
+                  ),
+          ),
+        ],
       ),
       bottomNavigationBar: canAdd
           ? Container(
@@ -96,7 +192,7 @@ class FormInspectionTableScaffold extends ConsumerWidget {
                   child: SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => context.push(entryRoute),
+                      onPressed: () => context.push(widget.entryRoute),
                       icon: const Icon(Icons.add_rounded, size: 20),
                       label: const Text('Add Inspection'),
                     ),
@@ -105,6 +201,69 @@ class FormInspectionTableScaffold extends ConsumerWidget {
               ),
             )
           : null,
+    );
+  }
+}
+
+class _CardsBody extends StatelessWidget {
+  const _CardsBody({
+    required this.columns,
+    required this.inspections,
+    required this.entryRoute,
+    required this.canAdd,
+    required this.hasQuery,
+  });
+
+  final List<FormTableColumn> columns;
+  final List<InspectionRecord> inspections;
+  final String entryRoute;
+  final bool canAdd;
+  final bool hasQuery;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (inspections.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            hasQuery
+                ? 'No inspections match your search.'
+                : canAdd
+                    ? 'No inspections yet.\nTap Add Inspection to start.'
+                    : 'No inspections available for review yet.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            itemCount: inspections.length,
+            itemBuilder: (context, index) {
+              final record = inspections[index];
+              final row = inspectionToTableRow(record);
+              return InspectionListCard(
+                record: record,
+                entryRoute: entryRoute,
+                highlights: buildInspectionHighlights(
+                  columns: columns,
+                  row: row,
+                ),
+              );
+            },
+          ),
+        ),
+        InspectionRecordCountBar(count: inspections.length),
+      ],
     );
   }
 }
@@ -141,8 +300,6 @@ Future<void> saveFormInspection({
           submitForReview: submitForReview,
         );
 
-    // Show dialog while the form route is still mounted, then pop after it
-    // closes. Popping first then showing a dialog races Overlay deactivation.
     if (!context.mounted) return;
     await DialogService.showSuccess(
       title: submitForReview ? 'Submitted for Review' : 'Draft Saved',

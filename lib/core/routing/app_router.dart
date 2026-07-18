@@ -44,8 +44,7 @@ final _routerRefreshProvider = Provider<ValueNotifier<int>>((ref) {
 });
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  // Keep a single GoRouter instance. Watching auth here recreates the Navigator
-  // and Overlay mid-transition (dialogs), which triggers `_dependents.isEmpty`.
+  // Do not watch auth here — recreating GoRouter mid-dialog breaks Overlay.
   final refresh = ref.watch(_routerRefreshProvider);
 
   return GoRouter(

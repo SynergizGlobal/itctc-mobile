@@ -4,6 +4,7 @@ import '../models/form_table_column.dart';
 import '../models/form_table_header.dart';
 import '../utils/form_table_responsive.dart';
 import '../utils/form_table_theme.dart';
+import 'inspection_record_count_bar.dart';
 
 /// Horizontally scrollable form table matching paper form layout.
 /// Adapts column sizing, typography, and scroll affordances to screen width.
@@ -63,7 +64,6 @@ class _FormDataTableState extends State<FormDataTable> {
           0,
           (sum, c) => sum + c.width,
         );
-        final theme = Theme.of(context);
         final borderColor = FormTableTheme.border(context);
         final headerBg = FormTableTheme.headerBackground(context);
         final bodyBg = FormTableTheme.bodyBackground(context);
@@ -130,15 +130,7 @@ class _FormDataTableState extends State<FormDataTable> {
                     ),
             ),
             if (widget.rows.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: theme.colorScheme.surfaceContainerHighest,
-                child: Text(
-                  '${widget.rows.length} ${widget.rows.length == 1 ? 'record' : 'records'}',
-                  style: theme.textTheme.labelMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              InspectionRecordCountBar(count: widget.rows.length),
           ],
         );
       },

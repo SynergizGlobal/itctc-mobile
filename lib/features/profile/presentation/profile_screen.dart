@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/preferences/inspection_list_view_mode.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -16,6 +17,7 @@ class ProfileScreen extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final user = auth.user;
     final themeMode = ref.watch(themeModeProvider);
+    final listViewMode = ref.watch(inspectionListViewModeProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -105,6 +107,51 @@ class ProfileScreen extends ConsumerWidget {
                           onSelectionChanged: (selection) => ref
                               .read(themeModeProvider.notifier)
                               .setThemeMode(selection.first),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text('Inspection lists', style: theme.textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'List view',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Cards is the default. Table shows the full paper layout.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SegmentedButton<InspectionListViewMode>(
+                          segments: const [
+                            ButtonSegment(
+                              value: InspectionListViewMode.cards,
+                              icon: Icon(Icons.view_agenda_outlined, size: 18),
+                              label: Text('Cards'),
+                            ),
+                            ButtonSegment(
+                              value: InspectionListViewMode.table,
+                              icon: Icon(Icons.table_chart_outlined, size: 18),
+                              label: Text('Table'),
+                            ),
+                          ],
+                          selected: {listViewMode},
+                          onSelectionChanged: (selection) => ref
+                              .read(inspectionListViewModeProvider.notifier)
+                              .setMode(selection.first),
                         ),
                       ],
                     ),
