@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -18,6 +19,42 @@ import '../models/inspection_record.dart';
 /// Builds a print-ready inspection PDF and exports via system Print / Share.
 class InspectionPdfService {
   InspectionPdfService._();
+
+  /// Cached Unicode-capable theme (Helvetica cannot render — / → / · etc.).
+  static pw.ThemeData? _theme;
+
+  static Future<pw.ThemeData> _pdfTheme() async {
+    if (_theme != null) return _theme!;
+    final baseData =
+        await rootBundle.load('assets/fonts/NotoSans-Regular.ttf');
+    final boldData = await rootBundle.load('assets/fonts/NotoSans-Bold.ttf');
+    _theme = pw.ThemeData.withFont(
+      base: pw.Font.ttf(baseData),
+      bold: pw.Font.ttf(boldData),
+    );
+    return _theme!;
+  }
+
+  /// Clears cached fonts (useful in tests).
+  static void resetFontCacheForTest() => _theme = null;
+
+  /// Maps fancy punctuation to ASCII so PDF glyphs never fall back to boxes.
+  static String pdfText(String? value) {
+    if (value == null || value.isEmpty) return '';
+    return value
+        .replaceAll('\u2014', '-') // em dash
+        .replaceAll('\u2013', '-') // en dash
+        .replaceAll('\u2192', '->')
+        .replaceAll('\u2190', '<-')
+        .replaceAll('\u00B7', '-') // middle dot
+        .replaceAll('\u2022', '*') // bullet
+        .replaceAll('\u2026', '...')
+        .replaceAll('\u00A0', ' ')
+        .replaceAll('\u2018', "'")
+        .replaceAll('\u2019', "'")
+        .replaceAll('\u201C', '"')
+        .replaceAll('\u201D', '"');
+  }
 
   static const _imageExtensions = {
     'jpg',
@@ -127,11 +164,13 @@ class InspectionPdfService {
       );
     }
 
+    final theme = await _pdfTheme();
     final doc = pw.Document(
       title: '${record.formCode} Inspection',
       author: record.createdByUsername,
       subject: record.title,
       creator: 'ITCTC Forms',
+      theme: theme,
     );
 
     doc.addPage(
@@ -149,7 +188,7 @@ class InspectionPdfService {
           if (site.hasLocation) ...[
             pw.SizedBox(height: 16),
             _sectionTitle('Site location'),
-            _kv('Address', site.locationAddress ?? '—'),
+            _kv('Address', site.locationAddress ?? '-'),
             if (site.latitude != null && site.longitude != null)
               _kv(
                 'Coordinates',
@@ -168,7 +207,7 @@ class InspectionPdfService {
             for (final block in imageBlocks) ...[
               pw.SizedBox(height: 8),
               pw.Text(
-                block.title,
+                pdfText(block.title),
                 style: pw.TextStyle(
                   fontSize: 10,
                   fontWeight: pw.FontWeight.bold,
@@ -188,7 +227,7 @@ class InspectionPdfService {
             for (final block in docBlocks) ...[
               pw.SizedBox(height: 10),
               pw.Text(
-                block.title,
+                pdfText(block.title),
                 style: pw.TextStyle(
                   fontSize: 10,
                   fontWeight: pw.FontWeight.bold,
@@ -210,7 +249,7 @@ class InspectionPdfService {
                     borderRadius: pw.BorderRadius.circular(4),
                   ),
                   child: pw.Text(
-                    block.body!,
+                    pdfText(block.body),
                     style: const pw.TextStyle(fontSize: 9),
                   ),
                 ),
@@ -226,8 +265,8 @@ class InspectionPdfService {
             ),
             pw.SizedBox(height: 6),
             for (final video in skippedVideos)
-              pw.Bullet(
-                text: '${video.name} (${_formatBytes(video.size)})',
+              pw.Text(
+                pdfText('- ${video.name} (${_formatBytes(video.size)})'),
                 style: const pw.TextStyle(fontSize: 9),
               ),
           ],
@@ -235,8 +274,8 @@ class InspectionPdfService {
             pw.SizedBox(height: 12),
             _sectionTitle('Attachments unavailable'),
             for (final item in unreadable)
-              pw.Bullet(
-                text: '${item.name} — file missing or unreadable',
+              pw.Text(
+                pdfText('- ${item.name} - file missing or unreadable'),
                 style: const pw.TextStyle(fontSize: 9),
               ),
           ],
@@ -260,8 +299,10 @@ class InspectionPdfService {
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text(
-                      '${event.action.label} · '
-                      '${event.fromStatus.label} → ${event.toStatus.label}',
+                      pdfText(
+                        '${event.action.label} - '
+                        '${event.fromStatus.label} -> ${event.toStatus.label}',
+                      ),
                       style: pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
@@ -269,13 +310,15 @@ class InspectionPdfService {
                     ),
                     pw.SizedBox(height: 2),
                     pw.Text(
-                      event.message,
+                      pdfText(event.message),
                       style: const pw.TextStyle(fontSize: 9),
                     ),
                     pw.SizedBox(height: 2),
                     pw.Text(
-                      '${event.authorUsername} (${UserRole.displayLabel(event.authorRole)}) · '
-                      '${dateFormat.format(event.createdAt.toLocal())}',
+                      pdfText(
+                        '${event.authorUsername} (${UserRole.displayLabel(event.authorRole)}) - '
+                        '${dateFormat.format(event.createdAt.toLocal())}',
+                      ),
                       style: const pw.TextStyle(
                         fontSize: 8,
                         color: PdfColors.grey700,
@@ -337,7 +380,7 @@ class InspectionPdfService {
     payload.forEach((key, value) {
       if (skip.contains(key)) return;
       if (value is Map || value is List) return;
-      entries.add(MapEntry(prettyKey(key), value?.toString() ?? '—'));
+      entries.add(MapEntry(prettyKey(key), value?.toString() ?? '-'));
     });
     if (entries.isEmpty) {
       entries.add(const MapEntry('Details', 'No field values yet'));
@@ -365,7 +408,7 @@ class InspectionPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
-                  'NHSRCL · ITCTC',
+                  pdfText('NHSRCL - ITCTC'),
                   style: pw.TextStyle(
                     fontSize: 11,
                     fontWeight: pw.FontWeight.bold,
@@ -382,7 +425,7 @@ class InspectionPdfService {
               ],
             ),
             pw.Text(
-              record.formCode,
+              pdfText(record.formCode),
               style: pw.TextStyle(
                 fontSize: 14,
                 fontWeight: pw.FontWeight.bold,
@@ -429,7 +472,7 @@ class InspectionPdfService {
       padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 6),
       color: PdfColors.blueGrey50,
       child: pw.Text(
-        title,
+        pdfText(title),
         style: pw.TextStyle(
           fontSize: 11,
           fontWeight: pw.FontWeight.bold,
@@ -457,7 +500,7 @@ class InspectionPdfService {
 
   static pw.Widget _detailsTable(List<MapEntry<String, String>> details) {
     return _twoColumnTable([
-      for (final e in details) [e.key, e.value.trim().isEmpty ? '—' : e.value],
+      for (final e in details) [e.key, e.value.trim().isEmpty ? '-' : e.value],
     ]);
   }
 
@@ -475,7 +518,7 @@ class InspectionPdfService {
               pw.Padding(
                 padding: const pw.EdgeInsets.all(6),
                 child: pw.Text(
-                  row[0],
+                  pdfText(row[0]),
                   style: const pw.TextStyle(
                     fontSize: 9,
                     color: PdfColors.grey700,
@@ -485,7 +528,7 @@ class InspectionPdfService {
               pw.Padding(
                 padding: const pw.EdgeInsets.all(6),
                 child: pw.Text(
-                  row[1],
+                  pdfText(row[1]),
                   style: pw.TextStyle(
                     fontSize: 9,
                     fontWeight: pw.FontWeight.bold,
@@ -507,13 +550,13 @@ class InspectionPdfService {
           pw.SizedBox(
             width: 90,
             child: pw.Text(
-              label,
+              pdfText(label),
               style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700),
             ),
           ),
           pw.Expanded(
             child: pw.Text(
-              value,
+              pdfText(value),
               style: const pw.TextStyle(fontSize: 9),
             ),
           ),
@@ -566,7 +609,7 @@ class InspectionPdfService {
         final png = await page.toPng();
         blocks.add(
           _EmbeddedBlock.image(
-            title: '${attachment.name} — page $index',
+            title: '${attachment.name} - page $index',
             bytes: png,
           ),
         );
@@ -588,7 +631,7 @@ class InspectionPdfService {
     try {
       final text = await file.readAsString();
       if (text.length > 20000) {
-        return '${text.substring(0, 20000)}\n\n… truncated for print …';
+        return '${text.substring(0, 20000)}\n\n... truncated for print ...';
       }
       return text;
     } catch (_) {
