@@ -17,21 +17,26 @@ void main() {
   group('AuthCredentials', () {
     test('validates three role accounts with shared password', () {
       expect(
-        AuthCredentials.validate('itctc_in_001', '1234')?.role,
+        AuthCredentials.validate('in', '1234')?.role,
         UserRole.inspector,
       );
       expect(
-        AuthCredentials.validate('itctc_pmc_001', '1234')?.role,
+        AuthCredentials.validate('pmc', '1234')?.role,
         UserRole.pmc,
       );
       expect(
-        AuthCredentials.validate('itctc_itc_001', '1234')?.role,
+        AuthCredentials.validate('itc', '1234')?.role,
         UserRole.itcEngineer,
+      );
+      // Legacy usernames still accepted
+      expect(
+        AuthCredentials.validate('itctc_in_001', '1234')?.role,
+        UserRole.inspector,
       );
     });
 
     test('rejects wrong password', () {
-      expect(AuthCredentials.validate('itctc_in_001', 'wrong'), isNull);
+      expect(AuthCredentials.validate('in', 'wrong'), isNull);
     });
   });
 

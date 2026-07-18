@@ -3,27 +3,27 @@ import '../models/user_role.dart';
 
 /// Local demo credentials until backend auth is connected.
 ///
-/// Password for all demo accounts: `1234`
+/// Short usernames for quick typing. Password for all: `1234`
 class AuthCredentials {
   AuthCredentials._();
 
   static const demoPassword = '1234';
 
   static const inspector = AuthUser(
-    username: 'itctc_in_001',
+    username: 'in',
     displayName: 'Field Inspector',
     role: UserRole.inspector,
   );
 
   static const pmc = AuthUser(
-    username: 'itctc_pmc_001',
+    username: 'pmc',
     displayName: 'PMC Reviewer',
     role: UserRole.pmc,
   );
 
   static const itcEngineer = AuthUser(
-    username: 'itctc_itc_001',
-    displayName: 'ITC Preconfirmation Engineer',
+    username: 'itc',
+    displayName: 'ITC Engineer',
     role: UserRole.itcEngineer,
   );
 
@@ -36,13 +36,22 @@ class AuthCredentials {
     itcEngineer,
   ];
 
+  /// Older demo usernames still accepted so remembered sessions keep working.
+  static const Map<String, String> _aliases = {
+    'itctc_in_001': 'in',
+    'itctc_pmc_001': 'pmc',
+    'itctc_itc_001': 'itc',
+    'inspector': 'in',
+  };
+
   static AuthUser? validate(String username, String password) {
     if (password != demoPassword) return null;
     return userFor(username);
   }
 
   static AuthUser? userFor(String username) {
-    final key = username.trim().toLowerCase();
+    var key = username.trim().toLowerCase();
+    key = _aliases[key] ?? key;
     for (final user in allUsers) {
       if (user.username.toLowerCase() == key) return user;
     }

@@ -11,7 +11,7 @@ enum InspectionStatus {
   /// PMC or ITC returned the record for inspector corrections.
   returnedToInspector,
 
-  /// PMC approved; waiting for ITC Preconfirmation Engineer.
+  /// PMC approved; waiting for ITC Engineer.
   pendingItcReview,
 
   /// ITC returned the record to PMC for clarification.

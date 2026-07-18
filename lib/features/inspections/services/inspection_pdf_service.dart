@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../forms/shared/models/form_attachment.dart';
 import '../../forms/shared/models/form_site_capture.dart';
 import '../../forms/shared/services/attachment_storage_service.dart';
+import '../../auth/models/user_role.dart';
 import '../models/inspection_record.dart';
 
 /// Builds a print-ready inspection PDF and exports via system Print / Share.
@@ -276,7 +277,7 @@ class InspectionPdfService {
                     ),
                     pw.SizedBox(height: 2),
                     pw.Text(
-                      '${event.authorUsername} (${event.authorRole}) · '
+                      '${event.authorUsername} (${UserRole.displayLabel(event.authorRole)}) · '
                       '${dateFormat.format(event.createdAt.toLocal())}',
                       style: const pw.TextStyle(
                         fontSize: 8,
@@ -455,7 +456,7 @@ class InspectionPdfService {
       ['Created', dateFormat.format(record.createdAt.toLocal())],
       ['Updated', dateFormat.format(record.updatedAt.toLocal())],
       if (record.assignedToRole != null)
-        ['Assigned to', record.assignedToRole!],
+        ['Assigned to', UserRole.displayLabel(record.assignedToRole)],
     ];
     return _twoColumnTable(rows);
   }

@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/dialog_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../data/auth_credentials.dart';
+import '../models/auth_user.dart';
+import '../models/user_role.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -20,6 +23,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _rememberMe = false;
   bool _obscurePassword = true;
   bool _isSubmitting = false;
+  AuthUser? _selectedDemoUser;
 
   @override
   void initState() {
@@ -32,7 +36,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       setState(() {
         _rememberMe = auth.rememberMe;
         if (auth.savedUsername != null) {
-          _usernameController.text = auth.savedUsername!;
+          final mapped = AuthCredentials.userFor(auth.savedUsername!);
+          _usernameController.text = mapped?.username ?? auth.savedUsername!;
+          _selectedDemoUser = mapped;
+          if (mapped != null) {
+            _passwordController.text = AuthCredentials.demoPassword;
+          }
         }
       });
     });
@@ -43,6 +52,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _fillDemoAccount(AuthUser? user) {
+    setState(() {
+      _selectedDemoUser = user;
+      if (user == null) {
+        _usernameController.clear();
+        _passwordController.clear();
+        return;
+      }
+      _usernameController.text = user.username;
+      _passwordController.text = AuthCredentials.demoPassword;
+    });
   }
 
   Future<void> _submit() async {
@@ -113,39 +135,97 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 16),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Demo logins (password: 1234)',
-                              style: theme.textTheme.labelLarge,
+                    const SizedBox(height: 24),
+                    DropdownButtonFormField<AuthUser>(
+                      key: ValueKey(
+                        _selectedDemoUser?.username ?? 'demo-empty',
+                      ),
+                      initialValue: _selectedDemoUser,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Demo account',
+                        helperText: 'Password auto-fills as 1234',
+                        prefixIcon: Icon(Icons.badge_outlined),
+                      ),
+                      hint: const Text('Select a role'),
+                      borderRadius: BorderRadius.circular(12),
+                      itemHeight: 64,
+                      items: [
+                        for (final user in AuthCredentials.allUsers)
+                          DropdownMenuItem<AuthUser>(
+                            value: user,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primaryContainer,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(
+                                    _roleIcon(user),
+                                    size: 18,
+                                    color: theme.colorScheme.onPrimaryContainer,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        user.role.shortLabel,
+                                        style: theme.textTheme.titleSmall,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        'Username: ${user.username}',
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                          color: theme
+                                              .colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'itctc_in_001 — Inspector\n'
-                              'itctc_pmc_001 — PMC\n'
-                              'itctc_itc_001 — ITC Engineer',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                      ],
+                      selectedItemBuilder: (context) {
+                        return [
+                          for (final user in AuthCredentials.allUsers)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '${user.role.shortLabel}  ·  ${user.username}',
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
+                        ];
+                      },
+                      onChanged: _isSubmitting ? null : _fillDemoAccount,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _usernameController,
                       textInputAction: TextInputAction.next,
                       autocorrect: false,
                       decoration: const InputDecoration(
                         labelText: 'Username',
+                        hintText: 'in · pmc · itc',
                         prefixIcon: Icon(Icons.person_outline_rounded),
                       ),
+                      onChanged: (value) {
+                        final matched = AuthCredentials.userFor(value);
+                        if (matched != _selectedDemoUser) {
+                          setState(() => _selectedDemoUser = matched);
+                        }
+                      },
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Username is required';
@@ -163,9 +243,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock_outline_rounded),
                         suffixIcon: IconButton(
-                          tooltip: _obscurePassword ? 'Show password' : 'Hide password',
-                          onPressed: () =>
-                              setState(() => _obscurePassword = !_obscurePassword),
+                          tooltip:
+                              _obscurePassword ? 'Show password' : 'Hide password',
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                           icon: Icon(
                             _obscurePassword
                                 ? Icons.visibility_outlined
@@ -187,13 +269,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           value: _rememberMe,
                           onChanged: _isSubmitting
                               ? null
-                              : (value) => setState(() => _rememberMe = value ?? false),
+                              : (value) =>
+                                  setState(() => _rememberMe = value ?? false),
                         ),
                         Expanded(
                           child: GestureDetector(
                             onTap: _isSubmitting
                                 ? null
-                                : () => setState(() => _rememberMe = !_rememberMe),
+                                : () => setState(
+                                      () => _rememberMe = !_rememberMe,
+                                    ),
                             child: Text(
                               'Remember me',
                               style: theme.textTheme.bodyMedium,
@@ -228,5 +313,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ),
     );
+  }
+
+  IconData _roleIcon(AuthUser user) {
+    switch (user.role) {
+      case UserRole.inspector:
+        return Icons.engineering_outlined;
+      case UserRole.pmc:
+        return Icons.fact_check_outlined;
+      case UserRole.itcEngineer:
+        return Icons.verified_outlined;
+    }
   }
 }
