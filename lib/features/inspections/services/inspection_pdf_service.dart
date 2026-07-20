@@ -185,10 +185,12 @@ class InspectionPdfService {
           pw.SizedBox(height: 16),
           _sectionTitle('Field details'),
           _detailsTable(details),
-          if (site.hasLocation) ...[
+          if (_hasSiteSection(site)) ...[
             pw.SizedBox(height: 16),
             _sectionTitle('Site location'),
-            _kv('Address', site.locationAddress ?? '-'),
+            if (site.locationAddress != null &&
+                site.locationAddress!.trim().isNotEmpty)
+              _kv('Address', site.locationAddress!),
             if (site.latitude != null && site.longitude != null)
               _kv(
                 'Coordinates',
@@ -361,6 +363,14 @@ class InspectionPdfService {
     );
   }
 
+  static bool _hasSiteSection(FormSiteCapture site) {
+    return (site.locationAddress != null &&
+            site.locationAddress!.trim().isNotEmpty) ||
+        (site.latitude != null && site.longitude != null) ||
+        site.locationCapturedAt != null;
+  }
+
+  /// Flattens scalar, nested map, and list payload fields for print preview.
   static List<MapEntry<String, String>> detailEntries(
     Map<String, dynamic> payload,
   ) {
@@ -379,13 +389,74 @@ class InspectionPdfService {
     final entries = <MapEntry<String, String>>[];
     payload.forEach((key, value) {
       if (skip.contains(key)) return;
-      if (value is Map || value is List) return;
-      entries.add(MapEntry(prettyKey(key), value?.toString() ?? '-'));
+      _collectDetailEntries(entries, prettyKey(key), value);
     });
     if (entries.isEmpty) {
       entries.add(const MapEntry('Details', 'No field values yet'));
     }
     return entries;
+  }
+
+  static void _collectDetailEntries(
+    List<MapEntry<String, String>> out,
+    String label,
+    Object? value,
+  ) {
+    if (value is Map) {
+      if (value.isEmpty) {
+        out.add(MapEntry(label, '-'));
+        return;
+      }
+      for (final entry in value.entries) {
+        final childLabel = '$label · ${prettyKey(entry.key.toString())}';
+        _collectDetailEntries(out, childLabel, entry.value);
+      }
+      return;
+    }
+
+    if (value is List) {
+      if (value.isEmpty) {
+        out.add(MapEntry(label, '-'));
+        return;
+      }
+      if (value.every((item) => item is! Map)) {
+        out.add(
+          MapEntry(
+            label,
+            value.map(_formatDetailScalar).join(', '),
+          ),
+        );
+        return;
+      }
+      for (var index = 0; index < value.length; index++) {
+        final item = value[index];
+        final itemLabel = '$label · ${index + 1}';
+        if (item is Map) {
+          for (final entry in item.entries) {
+            final childLabel = '$itemLabel · ${prettyKey(entry.key.toString())}';
+            _collectDetailEntries(out, childLabel, entry.value);
+          }
+        } else {
+          _collectDetailEntries(out, itemLabel, item);
+        }
+      }
+      return;
+    }
+
+    out.add(MapEntry(label, _formatDetailScalar(value)));
+  }
+
+  static String _formatDetailScalar(Object? value) {
+    if (value == null) return '-';
+    if (value is bool) return value ? 'Yes' : 'No';
+    if (value is num) {
+      if (value is double && value == value.roundToDouble()) {
+        return value.toStringAsFixed(0);
+      }
+      return value.toString();
+    }
+    final text = value.toString().trim();
+    return text.isEmpty ? '-' : text;
   }
 
   static String prettyKey(String key) {

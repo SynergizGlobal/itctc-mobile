@@ -13,18 +13,72 @@ void main() {
       expect(InspectionPdfService.prettyKey('km'), 'Km');
     });
 
-    test('detailEntries skips nested payload and siteCapture', () {
+    test('detailEntries skips envelope-only keys', () {
       final entries = InspectionPdfService.detailEntries({
         'id': 'x',
         'attachments': [],
         'siteCapture': {'locationAddress': 'Somewhere'},
         'railSeat': 'OK',
         'gauge': 1435,
-        'nested': {'a': 1},
       });
 
       expect(entries.map((e) => e.key), ['Rail Seat', 'Gauge']);
       expect(entries.first.value, 'OK');
+    });
+
+    test('detailEntries flattens nested maps', () {
+      final entries = InspectionPdfService.detailEntries({
+        'downLine': {
+          'twist': {'design': 1.0, 'measured': 1.2, 'irregularity': 0.2},
+          'measuringPoint': 'MP-1',
+        },
+      });
+
+      expect(
+        entries.any(
+          (e) => e.key == 'Down Line · Twist · Design' && e.value == '1',
+        ),
+        isTrue,
+      );
+      expect(
+        entries.any(
+          (e) => e.key == 'Down Line · Twist · Measured' && e.value == '1.2',
+        ),
+        isTrue,
+      );
+      expect(
+        entries.any(
+          (e) => e.key == 'Down Line · Measuring Point' && e.value == 'MP-1',
+        ),
+        isTrue,
+      );
+    });
+
+    test('detailEntries flattens lists of maps', () {
+      final entries = InspectionPdfService.detailEntries({
+        'rows': [
+          {'value': 10},
+          {'value': 20},
+        ],
+      });
+
+      expect(
+        entries.any((e) => e.key == 'Rows · 1 · Value' && e.value == '10'),
+        isTrue,
+      );
+      expect(
+        entries.any((e) => e.key == 'Rows · 2 · Value' && e.value == '20'),
+        isTrue,
+      );
+    });
+
+    test('detailEntries joins scalar lists', () {
+      final entries = InspectionPdfService.detailEntries({
+        'tags': ['a', 'b', 'c'],
+      });
+
+      expect(entries.single.key, 'Tags');
+      expect(entries.single.value, 'a, b, c');
     });
 
     test('extension classifiers', () {
@@ -53,6 +107,9 @@ void main() {
           'chainageKm': '12',
           'chainageM': '345',
           'note': 'Gap — check → left · right …',
+          'downLine': {
+            'gauge': {'design': 1435, 'measured': 1436, 'irregularity': 1},
+          },
         },
       );
 
@@ -62,7 +119,6 @@ void main() {
       );
 
       expect(bytes.length, greaterThan(1000));
-      // Font name appears in the PDF stream when embedded.
       final asString = String.fromCharCodes(bytes);
       expect(asString.contains('NotoSans'), isTrue);
     });
