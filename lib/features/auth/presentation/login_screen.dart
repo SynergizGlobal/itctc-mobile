@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/dialog_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/keyboard_dismiss.dart';
 import '../data/auth_credentials.dart';
 import '../models/auth_user.dart';
 import '../models/user_role.dart';
@@ -108,6 +109,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.all(24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
@@ -144,7 +146,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       isExpanded: true,
                       decoration: const InputDecoration(
                         labelText: 'Demo account',
-                        helperText: 'Password auto-fills as 1234',
                         prefixIcon: Icon(Icons.badge_outlined),
                       ),
                       hint: const Text('Select a role'),
@@ -215,6 +216,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       controller: _usernameController,
                       textInputAction: TextInputAction.next,
                       autocorrect: false,
+                      onTapOutside: KeyboardDismiss.onTapOutside,
                       decoration: const InputDecoration(
                         labelText: 'Username',
                         hintText: 'in · pmc · itc',
@@ -238,6 +240,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       textInputAction: TextInputAction.done,
+                      onTapOutside: KeyboardDismiss.onTapOutside,
                       onFieldSubmitted: (_) => _submit(),
                       decoration: InputDecoration(
                         labelText: 'Password',

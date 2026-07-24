@@ -6,6 +6,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_bar_title.dart';
+import '../../../core/widgets/keyboard_dismiss.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/home_provider.dart';
 import 'widgets/form_card.dart';
@@ -46,6 +47,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       body: CustomScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
           SliverAppBar(
             pinned: true,
@@ -88,6 +90,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                 child: TextField(
                   controller: _searchController,
+                  textInputAction: TextInputAction.search,
+                  onTapOutside: KeyboardDismiss.onTapOutside,
                   onChanged: (value) =>
                       ref.read(searchQueryProvider.notifier).state = value,
                   decoration: InputDecoration(

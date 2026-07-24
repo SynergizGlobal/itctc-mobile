@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'keyboard_dismiss.dart';
+
 class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,
@@ -31,6 +33,8 @@ class AppTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final TextInputAction? textInputAction;
 
+  bool get _isMultiline => maxLines > 1;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -47,7 +51,12 @@ class AppTextField extends StatelessWidget {
       readOnly: readOnly,
       maxLines: maxLines,
       inputFormatters: inputFormatters,
-      textInputAction: textInputAction,
+      textInputAction: textInputAction ??
+          (_isMultiline ? TextInputAction.newline : TextInputAction.done),
+      onTapOutside: readOnly ? null : KeyboardDismiss.onTapOutside,
+      onFieldSubmitted: readOnly || _isMultiline
+          ? null
+          : (_) => KeyboardDismiss.hide(context),
     );
   }
 }
@@ -78,7 +87,9 @@ class NumericTextField extends StatelessWidget {
       label: label,
       controller: controller,
       hint: hint ?? '0',
+      // numberWithOptions keeps decimals; Done bar covers iOS number-pad gap.
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      textInputAction: TextInputAction.done,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*')),
       ],

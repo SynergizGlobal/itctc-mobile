@@ -5,6 +5,7 @@ import 'core/routing/app_router.dart';
 import 'core/services/error_handler.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
+import 'core/widgets/keyboard_dismiss.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +28,11 @@ class ItctcApp extends ConsumerWidget {
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
       routerConfig: router,
+      builder: (context, child) {
+        return KeyboardDismissScope(
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

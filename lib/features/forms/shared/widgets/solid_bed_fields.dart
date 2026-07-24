@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/keyboard_dismiss.dart';
 import 'collapsible_form_panel.dart';
 
 enum TrackDirection { up, down }
@@ -64,6 +65,8 @@ class ChainageKmMFields extends StatelessWidget {
             controller: kmController,
             decoration: const InputDecoration(labelText: 'Chainage (km)', hintText: '0'),
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
+            onTapOutside: KeyboardDismiss.onTapOutside,
             onChanged: (_) => onChanged?.call(),
           ),
         ),
@@ -73,6 +76,9 @@ class ChainageKmMFields extends StatelessWidget {
             controller: mController,
             decoration: const InputDecoration(labelText: 'Chainage (m)', hintText: '000'),
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
+            onTapOutside: KeyboardDismiss.onTapOutside,
+            onFieldSubmitted: (_) => KeyboardDismiss.hide(context),
             onChanged: (_) => onChanged?.call(),
           ),
         ),
@@ -105,6 +111,8 @@ class SolidBedChainageFields extends StatelessWidget {
             controller: kmController,
             decoration: const InputDecoration(labelText: 'Chainage (km)', hintText: '0'),
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
+            onTapOutside: KeyboardDismiss.onTapOutside,
             onChanged: (_) => onChanged?.call(),
           ),
         ),
@@ -114,6 +122,8 @@ class SolidBedChainageFields extends StatelessWidget {
             controller: mController,
             decoration: const InputDecoration(labelText: 'Chainage (m)', hintText: '000'),
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
+            onTapOutside: KeyboardDismiss.onTapOutside,
             onChanged: (_) => onChanged?.call(),
           ),
         ),
@@ -123,6 +133,9 @@ class SolidBedChainageFields extends StatelessWidget {
             controller: cmController,
             decoration: const InputDecoration(labelText: 'Chainage (cm)', hintText: '00'),
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
+            onTapOutside: KeyboardDismiss.onTapOutside,
+            onFieldSubmitted: (_) => KeyboardDismiss.hide(context),
             onChanged: (_) => onChanged?.call(),
           ),
         ),

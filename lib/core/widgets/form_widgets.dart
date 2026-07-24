@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'keyboard_dismiss.dart';
+
 class ChainageFields extends StatelessWidget {
   const ChainageFields({
     super.key,
@@ -25,6 +27,8 @@ class ChainageFields extends StatelessWidget {
               hintText: '0',
             ),
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
+            onTapOutside: KeyboardDismiss.onTapOutside,
             onChanged: (_) => onChanged?.call(),
           ),
         ),
@@ -37,6 +41,9 @@ class ChainageFields extends StatelessWidget {
               hintText: '000',
             ),
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
+            onTapOutside: KeyboardDismiss.onTapOutside,
+            onFieldSubmitted: (_) => KeyboardDismiss.hide(context),
             onChanged: (_) => onChanged?.call(),
           ),
         ),

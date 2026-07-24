@@ -6,6 +6,7 @@ import '../../../../core/preferences/inspection_list_view_mode.dart';
 import '../../../../core/services/dialog_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_bar_title.dart';
+import '../../../../core/widgets/keyboard_dismiss.dart';
 import '../../../auth/models/user_role.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../inspections/models/inspection_record.dart';
@@ -141,6 +142,7 @@ class _FormInspectionTableScaffoldState
                   controller: _searchController,
                   focusNode: _searchFocus,
                   textInputAction: TextInputAction.search,
+                  onTapOutside: KeyboardDismiss.onTapOutside,
                   onChanged: (value) => setState(() => _query = value),
                   style: AppTheme.appBarTitleStyle(theme.colorScheme.onSurface),
                   decoration: InputDecoration(

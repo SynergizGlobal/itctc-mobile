@@ -82,6 +82,7 @@ class FormStepperLayout extends StatelessWidget {
         ),
         Expanded(
           child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Card(
               child: Padding(

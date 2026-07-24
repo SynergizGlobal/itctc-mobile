@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/widgets/app_bar_title.dart';
+import '../../../../core/widgets/keyboard_dismiss.dart';
 
 import '../../shared/widgets/form_inspection_table_scaffold.dart';
 import '../../../inspections/providers/inspection_store_provider.dart';
@@ -167,6 +168,8 @@ class _T72FormScreenState extends ConsumerState<T72FormScreen> {
                     controller: e.chainageKmController,
                     decoration: const InputDecoration(labelText: 'Chainage (km)'),
                     keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.next,
+                    onTapOutside: KeyboardDismiss.onTapOutside,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -175,6 +178,9 @@ class _T72FormScreenState extends ConsumerState<T72FormScreen> {
                     controller: e.chainageMController,
                     decoration: const InputDecoration(labelText: 'Chainage (m)'),
                     keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    onTapOutside: KeyboardDismiss.onTapOutside,
+                    onFieldSubmitted: (_) => KeyboardDismiss.hide(context),
                   ),
                 ),
               ],

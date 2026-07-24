@@ -81,6 +81,8 @@ class _CollapsibleFormPanelState extends State<CollapsibleFormPanel> {
                   ConstrainedBox(
                     constraints: BoxConstraints(maxHeight: widget.expandedMaxHeight),
                     child: SingleChildScrollView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
                       child: widget.child,
                     ),

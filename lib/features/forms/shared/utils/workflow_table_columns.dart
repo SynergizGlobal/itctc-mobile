@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/services/dialog_service.dart';
 import '../../../../core/services/error_handler.dart';
+import '../../../../core/widgets/keyboard_dismiss.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../inspections/models/inspection_action.dart';
 import '../../../inspections/models/inspection_record.dart';
@@ -193,6 +194,8 @@ Future<String?> promptInspectionComment({
         content: TextField(
           controller: controller,
           maxLines: 4,
+          textInputAction: TextInputAction.newline,
+          onTapOutside: KeyboardDismiss.onTapOutside,
           decoration: InputDecoration(hintText: hint),
           autofocus: true,
         ),
